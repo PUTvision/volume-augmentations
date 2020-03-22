@@ -1,4 +1,4 @@
-# VolumeAugmentations
+# Volume Augmentations
 
 This project includes a Python library that allows to efficiently augment 3D volumes. The augmentations implemented are:
 
