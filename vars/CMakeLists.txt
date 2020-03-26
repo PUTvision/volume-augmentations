@@ -2,6 +2,6 @@
 
 cmake_minimum_required(VERSION 3.17)
 
-project(volume_augmentations_rs Rust)
+project(vars Rust)
 
-cargo_build(NAME volume-augmentations-rs)
+cargo_build(NAME vars)
