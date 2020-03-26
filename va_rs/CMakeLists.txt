@@ -2,10 +2,10 @@
 
 cmake_minimum_required(VERSION 3.17)
 
-project(vars Rust)
+project(va_rs Rust)
 
 cargo_build(
-  NAME volume_augmentations
+  NAME va_rs
   LIB_TYPE SHARED
   DST_PREFIX ""
   )

@@ -49,7 +49,7 @@ private:
     std::vector<std::shared_ptr<Transformation>> _transformations;
 };
 
-PYBIND11_MODULE(vacpp, m) {
+PYBIND11_MODULE(va_cpp, m) {
     m.doc() = "pybind11 example plugin"; // optional module docstring
 
     py::class_<Transformation, std::shared_ptr<Transformation>>(m, "Transformation");

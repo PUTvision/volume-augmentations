@@ -36,5 +36,5 @@ add_custom_target(release
   )
 
 
-add_subdirectory(vacpp)
-add_subdirectory(vars)
+add_subdirectory(va_cpp)
+add_subdirectory(va_rs)
