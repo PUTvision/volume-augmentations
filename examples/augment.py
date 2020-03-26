@@ -3,7 +3,10 @@ import random
 import cv2
 import numpy as np
 
-from volume_augmentations import augment
+import sys
+sys.path.insert(1, 'build/lib')
+
+from va_rs import augment
 
 original_cube = np.zeros((32, 32, 32), dtype=np.float32)
 original_cube[12:20, 12:20, 12:20] = 1.0
