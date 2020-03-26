@@ -2,12 +2,13 @@ cmake_minimum_required(VERSION 3.17)
 
 project(vacpp CXX)
 
-add_library(vacpp STATIC)
+add_library(vacpp SHARED)
 
 set_target_properties(vacpp PROPERTIES
   CXX_STANDARD 20
   CXX_STANDARD_REQUIRED ON
   CXX_EXTENSIONS OFF
+  PREFIX ""
   )
 
 include(CheckIPOSupported)
@@ -46,5 +47,5 @@ target_link_libraries(vacpp PRIVATE pybind11::embed pybind11::module pybind11::p
 
 
 target_sources(vacpp PRIVATE
-    src/foo.cpp
+    src/transformation.cpp
     )
