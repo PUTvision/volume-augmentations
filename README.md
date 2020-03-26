@@ -24,6 +24,45 @@ pip install <name_of_the_version>.whl
 
 ### Compiling from source
 
+#### Prerequisites for C++ subproject 
+
+Install `vcpkg`:
+
+```bash
+$ cd ..
+$ git clone https://github.com/Microsoft/vcpkg.git
+$ cd vcpkg
+$ ./bootstrap-vcpkg.sh
+
+$ ./vcpkg install pybind11
+```
+
+$$$$ Build using `make`
+
+```bash
+$ mkdir build
+$ cd build
+$ cmake .. -DCMAKE_TOOLCHAIN_FILE=../../vcpkg/scripts/buildsystems/vcpkg.cmake
+$ make  # by defaults builds in a release mode
+$ make release
+$ make debug
+```
+
+
+$$$$ Build using `ninja`
+
+However, the output from `cargo` will not be visible during building.
+
+```bash
+$ mkdir build
+$ cd build
+$ cmake .. -GNinja -DCMAKE_TOOLCHAIN_FILE=../../vcpkg/scripts/buildsystems/vcpkg.cmake
+$ ninja   # by defaults builds in a release mode
+$ ninja release
+$ ninja debug
+```
+
+
 #### Prerequisites
 
 You need a working Rust nightly compiler and maturin Python package.
