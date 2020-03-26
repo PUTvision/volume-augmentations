@@ -37,7 +37,7 @@ $ ./bootstrap-vcpkg.sh
 $ ./vcpkg install pybind11
 ```
 
-$$$$ Build using `make`
+#### Build using `make`
 
 ```bash
 $ mkdir build
@@ -48,8 +48,7 @@ $ make release
 $ make debug
 ```
 
-
-$$$$ Build using `ninja`
+#### Build using `ninja`
 
 However, the output from `cargo` will not be visible during building.
 
@@ -61,7 +60,6 @@ $ ninja   # by defaults builds in a release mode
 $ ninja release
 $ ninja debug
 ```
-
 
 #### Prerequisites
 
