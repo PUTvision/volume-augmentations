@@ -40,16 +40,18 @@ jobs:
         if [ "$RUNNER_OS" == "Linux" ]; then
           sudo apt-get -y install gfortran
         fi
-        python -m pip install --upgrade pip
-        pip install maturin
+        python -m pip install wheel
         git clone https://github.com/Microsoft/vcpkg.git
         cd vcpkg
         ./bootstrap-vcpkg.sh
         ./vcpkg install pybind11
       shell: bash
-    - name: Configure
-      run: mkdir build && cd build && cmake .. -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
-      shell: bash
     - name: Build
-      run: cmake --build build --config Release
+      run: |
+        VCPKG_ROOT="$(pwd)/vcpkg" python setup.py bdist_wheel
       shell: bash
+    - name: Upload artifact
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        name: wheels
+        path: dist
