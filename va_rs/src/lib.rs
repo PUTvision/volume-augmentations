@@ -138,7 +138,7 @@ pub fn augment(
 }
 
 #[pymodule]
-fn volume_augmentations(_py: Python, m: &PyModule) -> PyResult<()> {
+fn va_rs(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(augment))?;
     m.add_class::<VolumeTransformer>()?;
 
