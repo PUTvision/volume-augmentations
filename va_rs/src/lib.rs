@@ -1,11 +1,11 @@
 #[macro_use(array)]
 extern crate ndarray;
 extern crate blas_src;
+#[cfg(any(target_os = "macos", target_os = "windows"))]
+extern crate intel_mkl_src;
 extern crate ndarray_linalg;
 #[cfg(target_os = "linux")]
 extern crate openblas_src;
-#[cfg(any(target_os = "macos", target_os = "windows"))]
-extern crate intel_mkl_src;
 
 mod interpolation;
 mod transformations;

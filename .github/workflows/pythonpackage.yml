@@ -2,13 +2,19 @@ name: Python package
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, ci_changes ]
   pull_request:
     branches: [ master ]
 
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+
+    env:
+      CMAKE_GENERATOR: Ninja
+      CC: gcc-9
+      CXX: g++-9
+
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -22,6 +28,9 @@ jobs:
       with:
         toolchain: nightly
         override: true
+    - name: Set up C++
+      run: |
+        sudo apt-get -y install ninja-build
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v1
       with:
@@ -31,15 +40,18 @@ jobs:
         if [ "$RUNNER_OS" == "Linux" ]; then
           sudo apt-get -y install gfortran
         fi
-        python -m pip install --upgrade pip
-        pip install maturin
+        python -m pip install wheel
+        git clone https://github.com/Microsoft/vcpkg.git
+        cd vcpkg
+        ./bootstrap-vcpkg.sh
+        ./vcpkg install pybind11
       shell: bash
     - name: Build
       run: |
-        maturin build --release --strip --no-sdist --cargo-extra-args="-Z features=itarget"
+        VCPKG_ROOT="$(pwd)/vcpkg" python setup.py bdist_wheel
       shell: bash
     - name: Upload artifact
       uses: actions/upload-artifact@v1.0.0
       with:
         name: wheels
-        path: target/wheels
+        path: dist
