@@ -55,17 +55,23 @@ add_custom_target(release
   )
 add_custom_target(wheel
   # DEPENDS va_cpp va_rs # TODO(PW) it would be nice if `setup.py` could use the existing build
-  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/setup.py bdist_wheel --dist-dir ${CMAKE_WHEEL_OUTPUT_DIRECTORY}
+  COMMAND Python3::Interpreter ${CMAKE_SOURCE_DIR}/setup.py bdist_wheel --dist-dir ${CMAKE_WHEEL_OUTPUT_DIRECTORY}
   BYPRODUCTS ${CMAKE_WHEEL_OUTPUT_DIRECTORY}/*.whl
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   COMMENT "Build wheel"
   )
 add_custom_target(wheel_install
   DEPENDS wheel
-  COMMAND ${Python3_EXECUTABLE} -m pip install ${CMAKE_WHEEL_OUTPUT_DIRECTORY}/*.whl --force-reinstall
+  COMMAND Python3::Interpreter -m pip install ${CMAKE_WHEEL_OUTPUT_DIRECTORY}/*.whl --force-reinstall
   COMMENT "Install wheel"
   )
 
 
 add_subdirectory(va_cpp)
 add_subdirectory(va_rs)
+
+enable_testing()
+add_test(NAME va_py_tests
+  COMMAND Python3::Interpreter -m pytest -v ${CMAKE_SOURCE_DIR}/va_py
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  )
