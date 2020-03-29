@@ -39,6 +39,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 set(CMAKE_COLOR_MAKEFILE ON)
 
+
+find_package(Python3 COMPONENTS Interpreter)
+
 add_custom_target(debug
   COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=Debug ${CMAKE_SOURCE_DIR}
   COMMAND ${CMAKE_COMMAND} --build .
@@ -52,16 +55,15 @@ add_custom_target(release
   )
 add_custom_target(wheel
   # DEPENDS va_cpp va_rs # TODO(PW) it would be nice if `setup.py` could use the existing build
-  COMMAND python ${CMAKE_SOURCE_DIR}/setup.py bdist_wheel --dist-dir ${CMAKE_WHEEL_OUTPUT_DIRECTORY}
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/setup.py bdist_wheel --dist-dir ${CMAKE_WHEEL_OUTPUT_DIRECTORY}
   BYPRODUCTS ${CMAKE_WHEEL_OUTPUT_DIRECTORY}/*.whl
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   COMMENT "Build wheel"
   )
 add_custom_target(wheel_install
   DEPENDS wheel
-  COMMAND pip install ${CMAKE_WHEEL_OUTPUT_DIRECTORY}/*.whl
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  COMMENT "Build wheel"
+  COMMAND ${Python3_EXECUTABLE} -m pip install ${CMAKE_WHEEL_OUTPUT_DIRECTORY}/*.whl --force-reinstall
+  COMMENT "Install wheel"
   )
 
 

@@ -2,13 +2,16 @@ cmake_minimum_required(VERSION 3.12)
 
 project(va_cpp CXX)
 
-add_library(va_cpp SHARED)
+find_package(Python3 COMPONENTS Development)
+find_package(pybind11 CONFIG REQUIRED)
+
+Python3_add_library(va_cpp MODULE WITH_SOABI)
+target_link_libraries(va_cpp PRIVATE pybind11::embed pybind11::module pybind11::pybind11)
 
 set_target_properties(va_cpp PROPERTIES
   CXX_STANDARD 20
   CXX_STANDARD_REQUIRED ON
   CXX_EXTENSIONS OFF
-  PREFIX ""
   )
 
 include(CheckIPOSupported)
@@ -40,11 +43,6 @@ else()
     -fdiagnostics-color=always
     )
 endif()
-
-
-find_package(pybind11 CONFIG REQUIRED)
-target_link_libraries(va_cpp PRIVATE pybind11::embed pybind11::module pybind11::pybind11)
-
 
 target_sources(va_cpp PRIVATE
   src/transformation.cpp

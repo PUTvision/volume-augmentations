@@ -1,5 +1,5 @@
 import numpy as np
-from volume_augmentations import VolumeTransformer
+from volume_augmentations.rust import VolumeTransformer
 
 
 def test_single_channel_rotation():
