@@ -34,7 +34,7 @@ $ git clone https://github.com/Microsoft/vcpkg.git
 $ cd vcpkg
 $ ./bootstrap-vcpkg.sh
 
-$ ./vcpkg install pybind11
+$ ./vcpkg install pybind11 doctest
 ```
 
 To simplify `cmake` commands, `VCPKG_ROOT` enviromental variable can be
