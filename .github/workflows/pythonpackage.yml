@@ -80,13 +80,13 @@ jobs:
       env:
         cache-name: cache-vcpkg
       with:
-        path: ${{ GITHUB_WORKSPACE }}/vcpkg
+        path: ${{ github.workspace }}/vcpkg
         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('setup_vcpkg.sh') }}
 
     - name: Setup VCPKG
       if: steps.cache-vcpkg.outputs.cache-hit != 'true'
       run: |
-        cd ${{ GITHUB_WORKSPACE }}
+        cd ${{ github.workspace }}
         if [ "$RUNNER_OS" == "Windows" ]; then
           ./setup_vcpkg.sh --triplet x64-windows
         else
@@ -98,7 +98,7 @@ jobs:
       run: |
         python setup.py bdist_wheel
       env:
-        VCPKG_ROOT: ${{ GITHUB_WORKSPACE }}/vcpkg
+        VCPKG_ROOT: ${{ github.workspace }}/vcpkg
 
     - name: Upload artifact
       uses: actions/upload-artifact@v1.0.0
