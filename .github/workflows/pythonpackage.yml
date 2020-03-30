@@ -46,10 +46,26 @@ jobs:
     - name: Install dependencies
       run: |
         if [ "$RUNNER_OS" == "Linux" ]; then
+          sudo add-apt-repository "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main"
+          sudo apt-get -y update
           sudo apt-get -y install ninja-build gfortran
+
+          if [ "${{ matrix.config.compiler }}" = "gcc" ]; then
+            sudo apt-get -y install g++-${{ matrix.config.version }}
+            echo "::set-env name=CC::gcc-${{ matrix.config.version }}"
+            echo "::set-env name=CXX::g++-${{ matrix.config.version }}"
+          else
+            sudo apt-get install -y clang-${{ matrix.config.version }}
+            echo "::set-env name=CC::clang-${{ matrix.config.version }}"
+            echo "::set-env name=CXX::clang++-${{ matrix.config.version }}"
+          fi
         elif [ "$RUNNER_OS" == "Windows" ]; then
           choco install ninja
+
+          echo "::set-env name=CC::${{ matrix.config.compiler }}"
+          echo "::set-env name=CXX::${{ matrix.config.compiler }}"
         fi
+
         python -m pip install wheel
       shell: bash
 
