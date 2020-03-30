@@ -77,11 +77,10 @@ jobs:
 
     - name: Cache VCPKG
       uses: actions/cache@v1
-      env:
-        cache-name: cache-vcpkg
+      id: cache-vcpkg
       with:
         path: ${{ github.workspace }}/vcpkg
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('setup_vcpkg.sh') }}
+        key: ${{ runner.os }}-vcpkg-${{ hashFiles('setup_vcpkg.sh') }}
 
     - name: Setup VCPKG
       if: steps.cache-vcpkg.outputs.cache-hit != 'true'
