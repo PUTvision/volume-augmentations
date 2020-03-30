@@ -22,7 +22,7 @@ jobs:
             version: "9"
           - os: ubuntu-latest
             compiler: clang
-            version: "10"
+            version: "9"
           - os: windows-latest
             compiler: cl
           - os: windows-latest
@@ -46,7 +46,7 @@ jobs:
     - name: Install dependencies (Linux)
       if: matrix.config.os == 'ubuntu-latest'
       run: |
-        sudo add-apt-repository "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main"
+        sudo add-apt-repository "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main"
         sudo apt-get -y update
         sudo apt-get -y install ninja-build gfortran
 
