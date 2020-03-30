@@ -63,7 +63,7 @@ jobs:
     - name: Install dependencies (Windows)
       if: matrix.config.os == 'windows-latest'
       run: |
-        choco install ninja
+        choco install ninja llvm
 
         echo "::set-env name=CC::${{ matrix.config.compiler }}"
         echo "::set-env name=CXX::${{ matrix.config.compiler }}"
