@@ -8,18 +8,26 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.config.os }}
 
     env:
       CMAKE_GENERATOR: Ninja
-      CC: gcc-9
-      CXX: g++-9
 
     strategy:
-      matrix:
-        os: [ubuntu-latest]
-        python-version: [3.5, 3.6, 3.7, 3.8]
       fail-fast: false
+      matrix:
+        config:
+          - os: ubuntu-latest
+            compiler: gcc
+            version: "9"
+          - os: ubuntu-latest
+            compiler: clang
+            version: "10"
+          - os: windows-latest
+            compiler: cl
+          - os: windows-latest
+            compiler: clang-cl
+        python-version: [3.5, 3.6, 3.7, 3.8]
 
     steps:
     - uses: actions/checkout@v2
