@@ -1,5 +1,5 @@
 function(cargo_build)
-  cmake_parse_arguments(CARGO "" "NAME;LIB_TYPE;DST_PREFIX;DST_SUFFIX" "" ${ARGN})
+  cmake_parse_arguments(CARGO "" "NAME;LIB_TYPE;DST_PREFIX;DST_SUFFIX;BUILD_ARGS" "" ${ARGN})
   string(REPLACE "-" "_" LIB_NAME ${CARGO_NAME})
 
   set(CARGO_TARGET_DIR ${CMAKE_CURRENT_BINARY_DIR})
@@ -46,6 +46,8 @@ function(cargo_build)
     set(LIB_BUILD_TYPE "debug")
   elseif(${CMAKE_BUILD_TYPE} STREQUAL "Release")
     set(LIB_BUILD_TYPE "release")
+  elseif(${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
+    set(LIB_BUILD_TYPE "release")
   else()
     set(LIB_BUILD_TYPE "debug")
   endif()
@@ -72,6 +74,7 @@ function(cargo_build)
     list(APPEND CARGO_ARGS "--release")
   endif()
 
+  list(APPEND CARGO_ARGS ${CARGO_BUILD_ARGS})
   file(GLOB_RECURSE LIB_SOURCES "*.rs")
 
   set(CARGO_ENV_COMMAND ${CMAKE_COMMAND} -E env "CARGO_TARGET_DIR=${CARGO_TARGET_DIR}")

@@ -41,19 +41,28 @@ class CMakeBuild(build_ext):
 
         if platform.system() == "Windows":
             cmake_args += ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}'.format(cfg.upper(), extdir)]
-            if sys.maxsize > 2**32:
-                cmake_args += ['-A', 'x64']
-            build_args += ['--', '/m']
-        else:
-            cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
+            #if sys.maxsize > 2**32:
+                #cmake_args += ['-A', 'x64']
+            #build_args += ['--', '/m']
+        #else:
+            #cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
 
+        cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
         env = os.environ.copy()
+        cmake_args += ['-DCMAKE_C_COMPILER=' + env.get("CMAKE_C_COMPILER","") ]
+        cmake_args += ['-DCMAKE_CXX_COMPILER=' + env.get("CMAKE_CXX_COMPILER","") ]
+        print("PLATFORM ", env.get("Platform", ''))
+        if "Platform" in env:
+            del env["Platform"]
+        #print("Env: ", env)
+        print("Fooo         ", cmake_args)
+        print("Fooo2         ", build_args)
         env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(env.get('CXXFLAGS', ''),
                                                               self.distribution.get_version())
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
         subprocess.check_call(['cmake', ext.sourcedir, '-G', 'Ninja'] + cmake_args, cwd=self.build_temp, env=env)
-        subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
+        subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp, env=env)
 
 
 setup(

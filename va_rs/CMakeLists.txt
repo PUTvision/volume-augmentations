@@ -8,4 +8,6 @@ cargo_build(
   NAME va_rs
   LIB_TYPE SHARED
   DST_PREFIX ""
+  DST_SUFFIX ".pyd"
+  BUILD_ARGS "-Zfeatures=itarget"
   )
