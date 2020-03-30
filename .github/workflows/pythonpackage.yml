@@ -86,7 +86,11 @@ jobs:
     - name: Setup VCPKG
       if: steps.cache-vcpkg.outputs.cache-hit != 'true'
       run: |
-        ./setup_vcpkg.sh
+        if [ "$RUNNER_OS" == "Windows" ]; then
+          ./setup_vcpkg.sh --triplet x64-windows
+        else
+          ./setup_vcpkg.sh
+        fi
       shell: bash
 
     - name: Build
