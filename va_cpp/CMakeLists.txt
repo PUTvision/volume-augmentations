@@ -10,49 +10,52 @@ find_package(Eigen3 CONFIG REQUIRED)
 
 add_library(va_cpp_static OBJECT)
 pybind11_add_module(va_cpp SHARED $<TARGET_OBJECTS:va_cpp_static>)
-#Python3_add_library(va_cpp SHARED $<TARGET_OBJECTS:va_cpp_static>)
-#Python3_add_library(va_cpp SHARED)
+add_executable(va_cpp_tests $<TARGET_OBJECTS:va_cpp_static>)
+
 target_link_libraries(va_cpp_static PUBLIC
   pybind11::embed
   pybind11::module
   pybind11::pybind11
   doctest::doctest
   Eigen3::Eigen)
-#target_link_libraries(va_cpp PUBLIC va_cpp_static)
 
-add_executable(va_cpp_tests $<TARGET_OBJECTS:va_cpp_static>)
-target_link_libraries(va_cpp_tests PRIVATE doctest::doctest)
 target_link_libraries(va_cpp_tests PRIVATE
-  pybind11::embed
-  pybind11::module
-  pybind11::pybind11
-  doctest::doctest
-  Eigen3::Eigen)
+  doctest::doctest)
 
-set_target_properties(va_cpp 
-va_cpp_tests 
-va_cpp_static
-PROPERTIES
+if (MSVC)
+  target_link_libraries(va_cpp_tests PRIVATE
+    pybind11::embed
+    pybind11::module
+    pybind11::pybind11
+    Eigen3::Eigen)
+endif()
+
+set_target_properties(va_cpp va_cpp_tests va_cpp_static
+  PROPERTIES
   CXX_STANDARD 20
   CXX_STANDARD_REQUIRED ON
   CXX_EXTENSIONS OFF
   )
+set_target_properties(va_cpp_static
+  PROPERTIES
+  POSITION_INDEPENDENT_CODE ON
+  )
 
-  if (DEFINED Python3_SOABI) 
-set_target_properties(va_cpp PROPERTIES
-  PREFIX ""
-  SUFFIX ".${Python3_SOABI}${CMAKE_SHARED_MODULE_SUFFIX}"
-	  )
-  endif()
+if (DEFINED Python3_SOABI)
+  set_target_properties(va_cpp PROPERTIES
+    PREFIX ""
+    SUFFIX ".${Python3_SOABI}${CMAKE_SHARED_MODULE_SUFFIX}"
+    )
+endif()
 
 include(CheckIPOSupported)
 check_ipo_supported(RESULT ipo_supported OUTPUT error)
 if (ipo_supported)
   message(STATUS "IPO / LTO enabled")
-  set_target_properties(va_cpp 
-  va_cpp_static 
-  va_cpp_tests 
-  PROPERTIES
+  set_target_properties(va_cpp
+    va_cpp_static
+    va_cpp_tests
+    PROPERTIES
     INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE
     INTERPROCEDURAL_OPTIMIZATION_DEBUG FALSE
     )
