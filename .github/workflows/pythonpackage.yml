@@ -86,7 +86,7 @@ jobs:
     - name: Setup VCPKG
       if: steps.cache-vcpkg.outputs.cache-hit != 'true'
       run: |
-        cd ${{ github.workspace }}
+        cd "${{ github.workspace }}"
         if [ "$RUNNER_OS" == "Windows" ]; then
           ./setup_vcpkg.sh --triplet x64-windows
         else
