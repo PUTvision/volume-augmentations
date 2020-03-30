@@ -2,7 +2,7 @@ name: Python package
 
 on:
   push:
-    branches: [ master, ci_changes ]
+    branches: [ master ]
   pull_request:
     branches: [ master ]
 
@@ -23,33 +23,54 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
     - name: Set up Rust
       uses: actions-rs/toolchain@v1
       with:
         toolchain: nightly
         override: true
+
     - name: Set up C++
       run: |
-        sudo apt-get -y install ninja-build
+        if [ "$RUNNER_OS" == "Linux" ]; then
+          sudo apt-get -y install ninja-build
+        elif [ "$RUNNER_OS" == "Windows" ]; then
+          choco install ninja
+        fi
+      shell: bash
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
+
     - name: Install dependencies
       run: |
         if [ "$RUNNER_OS" == "Linux" ]; then
           sudo apt-get -y install gfortran
         fi
         python -m pip install wheel
-        git clone https://github.com/Microsoft/vcpkg.git
-        cd vcpkg
-        ./bootstrap-vcpkg.sh
-        ./vcpkg install pybind11 doctest eigen3
       shell: bash
+
+    - name: Cache VCPKG
+      uses: actions/cache@v1
+      env:
+        cache-name: cache-vcpkg
+      with:
+        path: vcpkg
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('setup_vcpkg.sh') }}
+
+    - name: Setup VCPKG
+      if: steps.cache-vcpkg.outputs.cache-hit == 'false'
+      run: |
+        ./setup_vcpkg.sh
+      shell: bash
+
     - name: Build
       run: |
         VCPKG_ROOT="$(pwd)/vcpkg" python setup.py bdist_wheel
       shell: bash
+
     - name: Upload artifact
       uses: actions/upload-artifact@v1.0.0
       with:
