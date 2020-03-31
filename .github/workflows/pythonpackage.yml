@@ -55,7 +55,7 @@ jobs:
           echo "::set-env name=CC::gcc-${{ matrix.config.version }}"
           echo "::set-env name=CXX::g++-${{ matrix.config.version }}"
         else
-          sudo apt-get install -y clang-${{ matrix.config.version }}
+          sudo apt-get install -y clang-${{ matrix.config.version }} libc++-${{ matrix.config.version }}-dev libc++abi-${{ matrix.config.version }}-dev
           echo "::set-env name=CC::clang-${{ matrix.config.version }}"
           echo "::set-env name=CXX::clang++-${{ matrix.config.version }}"
         fi
