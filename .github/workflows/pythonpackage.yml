@@ -66,6 +66,8 @@ jobs:
         choco install ninja
         choco install llvm --version=9.0.1
 
+        $env:PATH += ";C:\Program Files\LLVM\bin"
+
         echo "::set-env name=CC::${{ matrix.config.compiler }}"
         echo "::set-env name=CXX::${{ matrix.config.compiler }}"
 
