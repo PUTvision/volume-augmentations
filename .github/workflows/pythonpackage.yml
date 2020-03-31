@@ -44,7 +44,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install dependencies (Linux)
-      if: matrix.config.os == 'ubuntu-latest'
+      if: runner.os == 'Linux'
       run: |
         sudo add-apt-repository "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main"
         sudo apt-get -y update
@@ -61,7 +61,7 @@ jobs:
         fi
 
     - name: Install dependencies (Windows)
-      if: matrix.config.os == 'windows-latest'
+      if: runner.os == 'Windows'
       run: |
         choco install ninja
         choco install llvm --version=9.0.1
@@ -71,7 +71,7 @@ jobs:
 
         echo "::set-env name=PATH::$env:PATH"
 
-        & .github\workflows\vsenv.ps1 -arch x64 -hostArch x64
+        & .github\workflows\vsenv.bat -arch=x64 -host_arch=x64
 
     - name: Install dependencies (common)
       run: |
