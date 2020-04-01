@@ -88,8 +88,13 @@ endif()
 target_sources(va_cpp_static PRIVATE
   src/transformation.cpp
   src/volume_transformer.cpp
+  src/utils.cpp
   src/test_entry.cpp
   )
+target_sources(va_cpp_static PRIVATE
+  src/utils.h
+  )
+
 
 target_sources(va_cpp_tests PRIVATE
   tests/main.cpp

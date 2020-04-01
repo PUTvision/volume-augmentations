@@ -4,22 +4,6 @@
 #include <doctest/doctest.h>
 #include <vector>
 
-auto deg2rad(float deg) -> float
-{
-  return deg * static_cast<float>(M_PI) / 180.0f;
-}
-auto rad2deg(float rad) -> float
-{
-  return rad / static_cast<float>(M_PI) * 180.0f;
-}
-auto deg2rad(Eigen::Vector3f deg)
-{
-  return (deg.array() * static_cast<float>(M_PI) / 180.0f).matrix();
-}
-auto rad2deg(Eigen::Vector3f rad)
-{
-  return (rad.array() / static_cast<float>(M_PI) * 180.0f).matrix();
-}
 
 namespace operations {
 
