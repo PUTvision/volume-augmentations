@@ -1,9 +1,29 @@
 import os
+import shutil
 import subprocess
 from pathlib import Path
 
-from setuptools import setup
+from setuptools import setup, Command, glob
 from typing import Optional, Tuple, List
+
+
+class CleanCommand(Command):
+    CLEAN_FILES = ['build', 'dist', '*.pyc', '*.tgz', '*.egg-info']
+
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        for path_spec in self.CLEAN_FILES:
+            paths = glob.glob(os.path.normpath(path_spec))
+            for path in [str(p) for p in paths]:
+                print('removing {}'.format(os.path.relpath(path)))
+                shutil.rmtree(path)
 
 
 def get_source_and_build_dir() -> Tuple[Path, Path]:
@@ -56,6 +76,9 @@ setup(
     version='0.1.0',
     packages=['volume_augmentations'],
     package_dir={'volume_augmentations': 'va_py/volume_augmentations'},
+    cmdclass={
+        'clean': CleanCommand,
+    },
     zip_safe=False,
     install_requires=['numpy~=1.18.2'],
 )
