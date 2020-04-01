@@ -24,7 +24,7 @@ pip install <name_of_the_version>.whl
 
 ### Compiling from source
 
-#### Prerequisites for C++ subproject
+#### Prerequisites for C++ subproject for Linux
 
 Install `vcpkg`:
 
@@ -35,6 +35,22 @@ $ cd vcpkg
 $ ./bootstrap-vcpkg.sh
 
 $ ./vcpkg install pybind11 doctest
+```
+
+To simplify `cmake` commands, `VCPKG_ROOT` enviromental variable can be
+exported with the location of `vcpkg` root directory.
+
+#### Prerequisites for C++ subproject for Windows
+
+Install `vcpkg`:
+
+```bash
+cd ..
+git clone https://github.com/Microsoft/vcpkg.git
+cd vcpkg
+bootstrap-vcpkg.bat
+
+vcpkg install pybind11 doctest --triplet windows-x64
 ```
 
 To simplify `cmake` commands, `VCPKG_ROOT` enviromental variable can be

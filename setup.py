@@ -33,16 +33,24 @@ def get_source_and_build_dir() -> Tuple[Path, Path]:
 
 def get_built_paths(build_dir: Path) -> Optional[List[Path]]:
     lib_dir = build_dir / 'lib' / 'volume_augmentations'
+    bin_dir = build_dir / 'bin'
     if not lib_dir.exists():
         return None
 
     va_cpp_path = None
     va_rs_path = None
-    for entry in lib_dir.iterdir():
-        if entry.name.startswith('va_cpp'):
-            va_cpp_path = entry
-        elif entry.name.startswith('va_rs'):
-            va_rs_path = entry
+    def check_extension(filename: str):
+        if filename.endswith(".so") or filename.endswith('.pyd') or filename.endswith('.dll'):
+            return True
+        return False
+
+    dirs = [lib_dir, bin_dir]
+    for dir in dirs:
+        for entry in dir.iterdir():
+            if entry.name.startswith('va_cpp') and check_extension(entry.name):
+                va_cpp_path = entry
+            elif entry.name.startswith('va_rs') and check_extension(entry.name):
+                va_rs_path = entry
 
     return [va_cpp_path, va_rs_path] if all((va_cpp_path, va_rs_path)) else None
 
