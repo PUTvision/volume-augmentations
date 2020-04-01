@@ -2,54 +2,108 @@ name: Python package
 
 on:
   push:
-    branches: [ master, ci_changes ]
+    branches: [ master ]
   pull_request:
     branches: [ master ]
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.config.os }}
 
     env:
       CMAKE_GENERATOR: Ninja
-      CC: gcc-9
-      CXX: g++-9
 
     strategy:
-      matrix:
-        os: [ubuntu-latest]
-        python-version: [3.5, 3.6, 3.7, 3.8]
       fail-fast: false
+      matrix:
+        config:
+          - os: ubuntu-latest
+            compiler: gcc
+            version: "9"
+          - os: ubuntu-latest
+            compiler: clang
+            version: "9"
+          - os: windows-latest
+            compiler: cl
+          # - os: windows-latest
+          #   compiler: clang-cl
+        python-version: [3.5, 3.6, 3.7, 3.8]
 
     steps:
     - uses: actions/checkout@v2
+
     - name: Set up Rust
       uses: actions-rs/toolchain@v1
       with:
         toolchain: nightly
         override: true
-    - name: Set up C++
-      run: |
-        sudo apt-get -y install ninja-build
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
+
+    - name: Install dependencies (Linux)
+      if: runner.os == 'Linux'
       run: |
-        if [ "$RUNNER_OS" == "Linux" ]; then
-          sudo apt-get -y install gfortran
+        sudo add-apt-repository "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main"
+        sudo apt-get -y update
+        sudo apt-get -y install ninja-build gfortran
+
+        if [ "${{ matrix.config.compiler }}" = "gcc" ]; then
+          sudo apt-get -y install g++-${{ matrix.config.version }}
+          echo "::set-env name=CC::gcc-${{ matrix.config.version }}"
+          echo "::set-env name=CXX::g++-${{ matrix.config.version }}"
+        else
+          sudo apt-get install -y clang-${{ matrix.config.version }} libc++-${{ matrix.config.version }}-dev libc++abi-${{ matrix.config.version }}-dev
+          echo "::set-env name=CC::clang-${{ matrix.config.version }}"
+          echo "::set-env name=CXX::clang++-${{ matrix.config.version }}"
         fi
+
+    - name: Install dependencies (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        choco install ninja
+        choco install llvm --version=9.0.1
+
+        $env:PATH += ";C:\Program Files\LLVM\bin"
+
+        echo "::set-env name=CC::${{ matrix.config.compiler }}"
+        echo "::set-env name=CXX::${{ matrix.config.compiler }}"
+
+        echo "::set-env name=PATH::$env:PATH"
+
+        & .github\workflows\vsenv.bat -arch=x64 -host_arch=x64
+
+    - name: Install dependencies (common)
+      run: |
         python -m pip install wheel
-        git clone https://github.com/Microsoft/vcpkg.git
-        cd vcpkg
-        ./bootstrap-vcpkg.sh
-        ./vcpkg install pybind11 doctest eigen3
       shell: bash
+
+    - name: Cache VCPKG
+      uses: actions/cache@v1
+      id: cache-vcpkg
+      with:
+        path: ${{ github.workspace }}/vcpkg
+        key: ${{ runner.os }}-vcpkg-${{ hashFiles('setup_vcpkg.sh') }}
+
+    - name: Setup VCPKG
+      if: steps.cache-vcpkg.outputs.cache-hit != 'true'
+      run: |
+        cd "${{ github.workspace }}"
+        if [ "$RUNNER_OS" == "Windows" ]; then
+          ./setup_vcpkg.sh --triplet x64-windows
+        else
+          ./setup_vcpkg.sh
+        fi
+      shell: bash
+
     - name: Build
       run: |
-        VCPKG_ROOT="$(pwd)/vcpkg" python setup.py bdist_wheel
-      shell: bash
+        python setup.py bdist_wheel
+      env:
+        VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+
     - name: Upload artifact
       uses: actions/upload-artifact@v1.0.0
       with:
