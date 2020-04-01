@@ -98,6 +98,18 @@ jobs:
         fi
       shell: bash
 
+    - name: Cache Cargo
+      uses: actions/cache@v1
+      id: cache-cargo
+      with:
+        path: build/va_rs
+        key: ${{ runner.os }}-cargo-${{ hashFiles('va_rs/Cargo.toml') }}
+
+    - name: Setup Cargo
+      if: steps.cache-cargo.outputs.cache-hit != 'true'
+      run: |
+        cargo check -Z features=itarget --manifest-path va_rs/Cargo.toml
+
     - name: Build
       run: |
         python setup.py bdist_wheel
