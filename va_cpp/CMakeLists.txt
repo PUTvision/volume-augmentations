@@ -2,24 +2,56 @@ cmake_minimum_required(VERSION 3.12)
 
 project(va_cpp CXX)
 set(CMAKE_CXX_STANDARD 20)
+add_definitions(-DXTENSOR_ENABLE_XSIMD)
+add_definitions(-DXTENSOR_USE_XSIMD)
+add_definitions(-DTBB_SUPPRESS_DEPRECATED_MESSAGES)
+set(BLA_VENDOR Intel10_64lp)
+set(BLA_STATIC OFF)
+find_package(LAPACK REQUIRED)
+find_package(BLAS REQUIRED)
+# message(STATUS "BLAS VENDOR:    " ${BLA_VENDOR})
+# message(STATUS "BLAS LIBRARIES: " ${BLAS_LIBRARIES})
+# message(STATUS "BLAS LINKING FLAGS: " ${BLAS_LINKER_FLAGS})
+# message(STATUS "LAPACK LIBRARIES: " ${LAPACK_LIBRARIES})
+# message(STATUS "LAPACK LINKING FLAGS: " ${LAPACK_LINKER_FLAGS})
+
 
 find_package(Python3 COMPONENTS Development)
 find_package(pybind11 CONFIG REQUIRED)
 find_package(doctest REQUIRED)
 find_package(Eigen3 CONFIG REQUIRED)
+find_package(xtensor CONFIG REQUIRED)
+find_package(xtensor-blas CONFIG REQUIRED)
+find_package(TBB CONFIG REQUIRED)
 
 add_library(va_cpp_static OBJECT)
 pybind11_add_module(va_cpp SHARED $<TARGET_OBJECTS:va_cpp_static>)
 add_executable(va_cpp_tests $<TARGET_OBJECTS:va_cpp_static>)
 
 target_link_libraries(va_cpp_static PUBLIC
+  ${BLAS_LIBRARIES}
+  ${LAPACK_LIBRARIES}
+  TBB::tbb
+  xtensor-blas
+  xtensor::use_xsimd
+  xtensor::optimize
+  xtensor::optimize
+  xtensor::use_TBB
   pybind11::embed
   pybind11::module
   pybind11::pybind11
   doctest::doctest
-  Eigen3::Eigen)
+  )
 
+target_link_libraries(va_cpp PRIVATE
+  ${BLAS_LIBRARIES}
+  ${LAPACK_LIBRARIES}
+  TBB::tbb
+  )
 target_link_libraries(va_cpp_tests PRIVATE
+  ${BLAS_LIBRARIES}
+  ${LAPACK_LIBRARIES}
+  TBB::tbb
   doctest::doctest)
 
 if (MSVC)
@@ -86,13 +118,16 @@ else()
 endif()
 
 target_sources(va_cpp_static PRIVATE
-  src/transformation.cpp
-  src/volume_transformer.cpp
-  src/utils.cpp
   src/test_entry.cpp
+  src/transform_matrix.cpp
+  src/transformation.cpp
+  src/utils.cpp
+  src/volume_transformer.cpp
   )
 target_sources(va_cpp_static PRIVATE
+  src/transform_matrix.h
   src/utils.h
+  src/volume_transformer.h
   )
 
 
