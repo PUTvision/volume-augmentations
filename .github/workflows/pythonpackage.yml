@@ -108,7 +108,7 @@ jobs:
     - name: Setup Cargo
       if: steps.cache-cargo.outputs.cache-hit != 'true'
       run: |
-        cargo check -Z features=itarget --manifest-path va_rs/Cargo.toml
+        cargo check --release -Z features=itarget --manifest-path va_rs/Cargo.toml
 
     - name: Build
       run: |
