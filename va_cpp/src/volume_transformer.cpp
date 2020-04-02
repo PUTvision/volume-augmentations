@@ -4,21 +4,24 @@
 #include <doctest/doctest.h>
 #include <vector>
 
+template <typename T>
+inline constexpr T pi_v = static_cast<T>(3.14159265358979323846);
+
 auto deg2rad(float deg) -> float
 {
-  return deg * static_cast<float>(M_PI) / 180.0f;
+  return deg * pi_v<float> / 180.0f;
 }
 auto rad2deg(float rad) -> float
 {
-  return rad / static_cast<float>(M_PI) * 180.0f;
+  return rad / pi_v<float> * 180.0f;
 }
 auto deg2rad(Eigen::Vector3f deg)
 {
-  return (deg.array() * static_cast<float>(M_PI) / 180.0f).matrix();
+  return (deg.array() * pi_v<float> / 180.0f).matrix();
 }
 auto rad2deg(Eigen::Vector3f rad)
 {
-  return (rad.array() / static_cast<float>(M_PI) * 180.0f).matrix();
+  return (rad.array() / pi_v<float> * 180.0f).matrix();
 }
 
 namespace operations {
