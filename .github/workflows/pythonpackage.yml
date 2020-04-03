@@ -92,9 +92,9 @@ jobs:
       run: |
         cd "${{ github.workspace }}"
         if [ "$RUNNER_OS" == "Windows" ]; then
-          ./setup_vcpkg.sh --triplet x64-windows
+          ./setup_vcpkg.sh --triplet x64-window --overlay-ports=${{ github.workspace }}/tools/vcpkg_ports
         else
-          ./setup_vcpkg.sh
+          ./setup_vcpkg.sh --overlay-ports=${{ github.workspace }}/tools/vcpkg_ports
         fi
       shell: bash
 
