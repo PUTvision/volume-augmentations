@@ -103,14 +103,26 @@ jobs:
         fi
       shell: bash
       env:
-        MKLROOT: /opt/intel/
+        MKLROOT: /opt/intel/mkl
+
+    - name: Cache Cargo
+      uses: actions/cache@v1
+      id: cache-cargo
+      with:
+        path: build/va_rs
+        key: ${{ runner.os }}-cargo-${{ hashFiles('va_rs/Cargo.toml') }}
+
+    - name: Setup Cargo
+      if: steps.cache-cargo.outputs.cache-hit != 'true'
+      run: |
+        cargo check --release -Z features=itarget --manifest-path va_rs/Cargo.toml
 
     - name: Build
       run: |
         python setup.py bdist_wheel
       env:
         VCPKG_ROOT: ${{ github.workspace }}/vcpkg
-        MKLROOT: /opt/intel/
+        MKLROOT: /opt/intel/mkl
 
     - name: Upload artifact
       uses: actions/upload-artifact@v1.0.0

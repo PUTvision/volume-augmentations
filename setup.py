@@ -1,78 +1,92 @@
 import os
-import re
-import sys
-import platform
+import shutil
 import subprocess
+from pathlib import Path
 
-from setuptools import setup, Extension
-from setuptools.command.build_ext import build_ext
-from distutils.version import LooseVersion
-
-
-class CMakeExtension(Extension):
-    def __init__(self, name, sourcedir=''):
-        super().__init__(name, sources=[])
-        self.sourcedir = os.path.abspath(sourcedir)
+from setuptools import setup, Command, glob
+from typing import Optional, Tuple, List
 
 
-class CMakeBuild(build_ext):
+class CleanCommand(Command):
+    CLEAN_FILES = ['build', 'dist', '*.pyc', '*.tgz', '*.egg-info']
+
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
     def run(self):
-        try:
-            out = subprocess.check_output(['cmake', '--version'])
-        except OSError:
-            raise RuntimeError("CMake must be installed to build the following extensions: " +
-                               ", ".join(e.name for e in self.extensions))
-
-        if platform.system() == "Windows":
-            cmake_version = LooseVersion(re.search(r'version\s*([\d.]+)', out.decode()).group(1))
-            if cmake_version < '3.1.0':
-                raise RuntimeError("CMake >= 3.1.0 is required on Windows")
-
-        for ext in self.extensions:
-            self.build_extension(ext)
-
-    def build_extension(self, ext):
-        extdir = os.path.join(os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name))), ext.name)
-        cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
-                      '-DPython3_ROOT_DIR=' + sys.base_exec_prefix]
-
-        cfg = 'Debug' if self.debug else 'Release'
-        build_args = ['--config', cfg]
-
-        if platform.system() == "Windows":
-            cmake_args += ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}'.format(cfg.upper(), extdir)]
-            #if sys.maxsize > 2**32:
-                #cmake_args += ['-A', 'x64']
-            #build_args += ['--', '/m']
-        #else:
-            #cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
-
-        cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
-        env = os.environ.copy()
-        cmake_args += ['-DCMAKE_C_COMPILER=' + env.get("CMAKE_C_COMPILER","") ]
-        cmake_args += ['-DCMAKE_CXX_COMPILER=' + env.get("CMAKE_CXX_COMPILER","") ]
-        print("PLATFORM ", env.get("Platform", ''))
-        if "Platform" in env:
-            del env["Platform"]
-        #print("Env: ", env)
-        print("Fooo         ", cmake_args)
-        print("Fooo2         ", build_args)
-        env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(env.get('CXXFLAGS', ''),
-                                                              self.distribution.get_version())
-        if not os.path.exists(self.build_temp):
-            os.makedirs(self.build_temp)
-        subprocess.check_call(['cmake', ext.sourcedir, '-G', 'Ninja'] + cmake_args, cwd=self.build_temp, env=env)
-        subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp, env=env)
+        for path_spec in self.CLEAN_FILES:
+            paths = glob.glob(os.path.normpath(path_spec))
+            for path in [str(p) for p in paths]:
+                print('removing {}'.format(os.path.relpath(path)))
+                shutil.rmtree(path)
 
 
+def get_source_and_build_dir() -> Tuple[Path, Path]:
+    source_dir = Path(__file__).parent.absolute()
+    return source_dir, source_dir / 'build'
+
+
+def get_built_paths(build_dir: Path) -> Optional[List[Path]]:
+    lib_dir = build_dir / 'lib' / 'volume_augmentations'
+    bin_dir = build_dir / 'bin'
+    if not lib_dir.exists():
+        return None
+
+    va_cpp_path = None
+    va_rs_path = None
+    def check_extension(filename: str):
+        if filename.endswith(".so") or filename.endswith('.pyd') or filename.endswith('.dll'):
+            return True
+        return False
+
+    dirs = [lib_dir, bin_dir]
+    for dir in dirs:
+        for entry in dir.iterdir():
+            if entry.name.startswith('va_cpp') and check_extension(entry.name):
+                va_cpp_path = entry
+            elif entry.name.startswith('va_rs') and check_extension(entry.name):
+                va_rs_path = entry
+
+    return [va_cpp_path, va_rs_path] if all((va_cpp_path, va_rs_path)) else None
+
+
+def compile_extensions() -> List[str]:
+    source_dir, build_dir = get_source_and_build_dir()
+    built_paths = get_built_paths(build_dir)
+    if built_paths is not None:
+        return list(map(str, built_paths))
+
+    try:
+        subprocess.check_output(['cmake', '--version'])
+    except OSError:
+        raise RuntimeError('CMake must be installed to build this project')
+
+    build_dir.mkdir(exist_ok=True)
+    try:
+        subprocess.check_call(['cmake', '-G', 'Ninja', str(source_dir)], cwd=str(build_dir), env=os.environ)
+        subprocess.check_call(['cmake', '--build', '.'], cwd=str(build_dir), env=os.environ)
+    except subprocess.CalledProcessError:
+        raise RuntimeError('Running CMake failed')
+
+    built_paths = get_built_paths(build_dir)
+    if built_paths is None:
+        raise RuntimeError('Compiled libraries not found')
+
+
+compile_extensions()
 setup(
     name='volume-augmentations',
     version='0.1.0',
     packages=['volume_augmentations'],
     package_dir={'volume_augmentations': 'va_py/volume_augmentations'},
-    ext_modules=[CMakeExtension('volume_augmentations')],
-    cmdclass=dict(build_ext=CMakeBuild),
+    cmdclass={
+        'clean': CleanCommand,
+    },
     zip_safe=False,
     install_requires=['numpy~=1.18.2'],
-    
 )

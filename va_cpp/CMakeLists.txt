@@ -65,6 +65,20 @@ target_link_libraries(va_cpp_tests PRIVATE
   pybind11::pybind11
   doctest::doctest)
 
+if (MSVC)
+  target_link_libraries(va_cpp_tests PRIVATE
+    pybind11::embed
+    pybind11::module
+    pybind11::pybind11
+    Eigen3::Eigen)
+
+  # By default all dynamic libraries on Windows land in ${CMAKE_BINARY_OUTPUT_DIRECTORY}, thus
+  # we need to copy it to a desired location
+  add_custom_command(TARGET va_cpp POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:va_cpp> ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+    COMMENT "Copying libraries to lib folder")
+endif()
+
 set_target_properties(va_cpp va_cpp_tests va_cpp_static
   PROPERTIES
   CXX_STANDARD 20
