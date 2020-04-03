@@ -10,6 +10,7 @@
 #include <vector>
 #include <xtensor-blas/xlinalg.hpp>
 #include <xtensor/xfixed.hpp>
+#include <iostream>
 
 struct Transform
 {
@@ -22,13 +23,6 @@ struct Transform
     auto rotZ = rotationZ_matrix(angles[2]);
     using xt::linalg::dot;
     transformation = dot(dot(dot(transformation, rotX), rotY), rotZ);
-    // clang-format off
-    
-    // transformation = transformation
-      // * rotationX_matrix(angles[0])
-      // * rotationY_matrix(angles[1])
-      // * rotationZ_matrix(angles[2]);
-    // clang-format on
 
     return *this;
   }
@@ -41,7 +35,11 @@ struct Transform
 
   auto scale(const vec3f &s) -> Transform &
   {
-    transformation *= scale_matrix(s);
+    using xt::linalg::dot;
+    std::cout << "T1" << transformation << '\n';
+    std::cout << "S1" << scale_matrix(s) << '\n';
+    transformation = dot(transformation, scale_matrix(s));
+    std::cout << "T2" << transformation << '\n';
     return *this;
   }
 
@@ -55,5 +53,4 @@ struct VolumeTransformer
   std::vector<float> volumeData;
   // Eigen::TensorMap<float, 4> volume;
 };
-
 

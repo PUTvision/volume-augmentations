@@ -4,6 +4,11 @@ project(va_cpp CXX)
 set(CMAKE_CXX_STANDARD 20)
 add_definitions(-DXTENSOR_ENABLE_XSIMD)
 add_definitions(-DXTENSOR_USE_XSIMD)
+add_definitions(-DXTENSOR_USE_TBB)
+add_definitions(-DHAVE_CBLAS=1)
+# add_definitions(-DUSE_OPENBLAS=1)
+add_definitions(-DWITH_MKLBLAS=1)
+add_definitions(-DCXXBLAS_DEBUG=1)
 add_definitions(-DTBB_SUPPRESS_DEPRECATED_MESSAGES)
 set(BLA_VENDOR Intel10_64lp)
 set(BLA_STATIC OFF)
@@ -15,13 +20,16 @@ find_package(BLAS REQUIRED)
 # message(STATUS "LAPACK LIBRARIES: " ${LAPACK_LIBRARIES})
 # message(STATUS "LAPACK LINKING FLAGS: " ${LAPACK_LINKER_FLAGS})
 
-
+# find_package(clapack CONFIG REQUIRED)
+# find_package(OpenBLAS CONFIG REQUIRED)
+# find_package(LAPACK REQUIRED)
+# find_package(BLAS REQUIRED)
 find_package(Python3 COMPONENTS Development)
 find_package(pybind11 CONFIG REQUIRED)
 find_package(doctest REQUIRED)
-find_package(Eigen3 CONFIG REQUIRED)
+#find_package(Eigen3 CONFIG REQUIRED)
 find_package(xtensor CONFIG REQUIRED)
-find_package(xtensor-blas CONFIG REQUIRED)
+#find_package(xtensor-blas CONFIG REQUIRED)
 find_package(TBB CONFIG REQUIRED)
 
 add_library(va_cpp_static OBJECT)
@@ -52,15 +60,10 @@ target_link_libraries(va_cpp_tests PRIVATE
   ${BLAS_LIBRARIES}
   ${LAPACK_LIBRARIES}
   TBB::tbb
+  pybind11::embed
+  pybind11::module
+  pybind11::pybind11
   doctest::doctest)
-
-if (MSVC)
-  target_link_libraries(va_cpp_tests PRIVATE
-    pybind11::embed
-    pybind11::module
-    pybind11::pybind11
-    Eigen3::Eigen)
-endif()
 
 set_target_properties(va_cpp va_cpp_tests va_cpp_static
   PROPERTIES

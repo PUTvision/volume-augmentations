@@ -1,24 +1,30 @@
 #include "transform_matrix.h"
 
 #include <doctest/doctest.h>
+#include <sstream>
 #include <xtensor/xfixed.hpp>
+#include <xtensor/xio.hpp>
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xview.hpp>
 
 auto translation_matrix(const vec3f &translation) -> mat4f
 {
-  mat4f m = xt::ones<float>(mat4f{}.shape());
-  xt::view(m, xt::range(0, 3), 3) = translation;
-  // m = xt::diag(translation);
-  return m;
+  return {
+      {1, 0, 0, translation(0)},
+      {0, 1, 0, translation(1)},
+      {0, 0, 1, translation(2)},
+      {0, 0, 0, 1},
+  };
 }
 
 auto scale_matrix(const vec3f &s) -> mat4f
 {
-  mat4f m = xt::diag(s);
-  // mat4f m = xt::ones<float>(mat4f{}.shape());
-  // xt::view(xt::diagonal(m), xt::range(0,3)) = s;
-  return m;
+  return {
+      {s(0), 0, 0, 0},
+      {0, s(1), 0, 0},
+      {0, 0, s(2), 0},
+      {0, 0, 0, 1},
+  };
 }
 
 auto rotationX_matrix(const float angle) -> mat4f
@@ -59,9 +65,7 @@ auto rotationZ_matrix(const float angle) -> mat4f
 
 auto shape_matrix(const vec4f &shape) -> mat4f
 {
-  mat4f m = xt::ones<float>(mat4f{}.shape());
-  xt::view(m, xt::range(0, 3), 3) = shape;
-  return m;
+  return translation_matrix(shape / 2.0f);
 }
 
 TEST_CASE("Translation matrix")
@@ -90,9 +94,9 @@ TEST_CASE("Shape matrix")
 {
   const vec3f v{10, 20, 30};
   const mat4f expected = {
-      {1, 0, 0, 10},
-      {0, 1, 0, 20},
-      {0, 0, 1, 30},
+      {1, 0, 0, 5},
+      {0, 1, 0, 10},
+      {0, 0, 1, 15},
       {0, 0, 0, 1},
   };
   CHECK_EQ(shape_matrix(v), expected);
