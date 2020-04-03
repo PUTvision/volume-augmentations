@@ -2,7 +2,7 @@ name: Python package
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, mkl_library ]
   pull_request:
     branches: [ master ]
 
