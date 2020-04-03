@@ -20,14 +20,14 @@ jobs:
           - os: ubuntu-latest
             compiler: gcc
             version: "9"
-          - os: ubuntu-latest
-            compiler: clang
-            version: "9"
-          - os: windows-latest
-            compiler: cl
+          # - os: ubuntu-latest
+            # compiler: clang
+            # version: "9"
+          # - os: windows-latest
+            # compiler: cl
           # - os: windows-latest
           #   compiler: clang-cl
-        python-version: [3.5, 3.6, 3.7, 3.8]
+        python-version: [3.5] #, 3.6, 3.7, 3.8]
 
     steps:
     - uses: actions/checkout@v2
@@ -51,7 +51,9 @@ jobs:
         sudo add-apt-repository "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main"
         sudo apt-get -y update
         sudo apt-get -y install ninja-build gfortran
-        sudo apt-get -y install intel-mkl-2020.0-088
+        sudo apt-get -y install intel-mkl-64bit-2020.0-088
+
+        ls /opt/intel/ -lr
 
         if [ "${{ matrix.config.compiler }}" = "gcc" ]; then
           sudo apt-get -y install g++-${{ matrix.config.version }}
@@ -100,12 +102,15 @@ jobs:
           ./setup_vcpkg.sh --overlay-ports=${{ github.workspace }}/tools/vcpkg_ports
         fi
       shell: bash
+      env:
+        MKLROOT: /opt/intel/
 
     - name: Build
       run: |
         python setup.py bdist_wheel
       env:
         VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+        MKLROOT: /opt/intel/
 
     - name: Upload artifact
       uses: actions/upload-artifact@v1.0.0
