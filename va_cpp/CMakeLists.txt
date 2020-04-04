@@ -70,7 +70,7 @@ if (MSVC)
     pybind11::embed
     pybind11::module
     pybind11::pybind11
-    Eigen3::Eigen)
+    )
 
   # By default all dynamic libraries on Windows land in ${CMAKE_BINARY_OUTPUT_DIRECTORY}, thus
   # we need to copy it to a desired location
