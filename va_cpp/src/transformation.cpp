@@ -11,6 +11,7 @@ class Transformation {
 public:
     [[nodiscard]] virtual bool is_stackable() const = 0;
     virtual void print() const = 0;
+    virtual ~Transformation() = default;
 };
 
 class RandomRotation : public Transformation {
@@ -28,6 +29,7 @@ public:
     void print() const override {
         std::cout << "RandomRotation" << std::endl;
     }
+    virtual ~RandomRotation() = default;
 
 private:
     RotationRanges _rotation_limits;
@@ -39,7 +41,7 @@ public:
 
     }
 
-    void print() {
+    void print() const{
         for (const auto &transformation : _transformations) {
             transformation->print();
         }

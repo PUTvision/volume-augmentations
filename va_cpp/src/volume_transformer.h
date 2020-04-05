@@ -10,7 +10,6 @@
 #include <vector>
 #include <xtensor-blas/xlinalg.hpp>
 #include <xtensor/xfixed.hpp>
-#include <iostream>
 
 struct Transform
 {
@@ -29,7 +28,8 @@ struct Transform
 
   auto translate(const vec3f &translation) -> Transform &
   {
-    // transformation *= translation_matrix(translation);
+    using xt::linalg::dot;
+    transformation = dot(transformation, translation_matrix(translation));
     return *this;
   }
 

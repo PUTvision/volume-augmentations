@@ -66,6 +66,38 @@ add_custom_target(wheel_install
   COMMENT "Install wheel"
   )
 
+if (MSVC)
+  # warning level 4 and all warnings as errors
+  add_compile_options(
+    /W4
+    # /WX
+    )
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  # lots of warnings and all warnings as errors
+  add_compile_options(
+    -Wall
+    -Wextra
+    -pedantic
+    -Werror
+    -march=native
+    -Weffc++
+    # -fconcepts
+    -fdiagnostics-color=always
+    -fsized-deallocation
+    )
+else()
+  # lots of warnings and all warnings as errors
+  add_compile_options(
+    -Wall
+    -Wextra
+    -pedantic
+    -Werror
+    -march=native
+    -Weffc++
+    -fconcepts
+    -fdiagnostics-color=always
+    )
+endif()
 
 add_subdirectory(va_cpp)
 add_subdirectory(va_rs)
