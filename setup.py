@@ -39,6 +39,7 @@ def get_built_paths(build_dir: Path) -> Optional[List[Path]]:
 
     va_cpp_path = None
     va_rs_path = None
+
     def check_extension(filename: str):
         if filename.endswith(".so") or filename.endswith('.pyd') or filename.endswith('.dll'):
             return True

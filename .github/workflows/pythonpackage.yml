@@ -38,7 +38,7 @@ jobs:
       id: mkl-cache
       with:
         path: ~/mkl/installed
-        key: mkl-2020.1
+        key: mkl-2020.1.1
 
     - name: Download MKL (Windows)
       if: runner.os == 'Windows' && steps.mkl-cache.outputs.cache-hit != 'true'
@@ -52,8 +52,13 @@ jobs:
     - name: Configure MKL  (Windows)
       if: runner.os == 'Windows'
       run: |
-        # echo "::set-env name=MKLROOT::$HOME/mkl/installed/compilers_and_libraries/compilers_and_libraries_2020.1.216/windows/mkl"
         echo "::set-env name=MKLROOT::~/mkl/installed/compilers_and_libraries_2020.1.216/windows/mkl"
+        $env:PATH += ";~/mkl/installed/compilers_and_libraries_2020.1.216/windows/compiler/lib/intel64_win"
+        $env:PATH += ";~/mkl/installed/compilers_and_libraries_2020.1.216/windows/redist/intel64_win/compiler"
+        $env:PATH += ";~/mkl/installed/compilers_and_libraries_2020.1.216/windows/redist/intel64_win/mkl"
+        $env:PATH += ";~/mkl/installed/compilers_and_libraries_2020.1.216/windows/redist/intel64_win/tbb"
+        echo "::set-env name=PATH::$env:PATH"
+        ls ~/mkl/installed/compilers_and_libraries_2020.1.216/windows/mkl
 
 
     - name: Set up Rust
@@ -138,6 +143,7 @@ jobs:
     - name: Setup Cargo
       if: steps.cache-cargo.outputs.cache-hit != 'true'
       run: |
+        echo "MKLROOT: $MKLROOT"
         cargo check --release -Z features=itarget --manifest-path va_rs/Cargo.toml
 
     - name: Build
