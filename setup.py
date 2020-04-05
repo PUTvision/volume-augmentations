@@ -67,7 +67,7 @@ def compile_extensions() -> List[str]:
         raise RuntimeError('CMake must be installed to build this project')
 
     build_dir.mkdir(exist_ok=True)
-    print(os.environ)
+    #  print(os.environ)
     try:
         subprocess.check_call(['cmake', '-G', 'Ninja', str(source_dir)], cwd=str(build_dir), env=os.environ)
         subprocess.check_call(['cmake', '--build', '.'], cwd=str(build_dir), env=os.environ)

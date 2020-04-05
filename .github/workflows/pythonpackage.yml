@@ -17,17 +17,17 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          # - os: ubuntu-latest
-            # compiler: gcc
-            # version: "9"
-          # - os: ubuntu-latest
-            # compiler: clang
-            # version: "9"
+          - os: ubuntu-latest
+            compiler: gcc
+            version: "9"
+          - os: ubuntu-latest
+            compiler: clang
+            version: "9"
           - os: windows-latest
             compiler: cl
           # - os: windows-latest
           #   compiler: clang-cl
-        python-version: [3.5] #, 3.6, 3.7, 3.8]
+        python-version: [3.5, 3.6, 3.7, 3.8]
 
     steps:
     - uses: actions/checkout@v2
@@ -52,10 +52,8 @@ jobs:
     - name: Configure MKL  (Windows)
       if: runner.os == 'Windows'
       run: |
-        echo "MKLROOT: " $env:MKLROOT
         # echo "::set-env name=MKLROOT::$HOME/mkl/installed/compilers_and_libraries/compilers_and_libraries_2020.1.216/windows/mkl"
         echo "::set-env name=MKLROOT::~/mkl/installed/compilers_and_libraries_2020.1.216/windows/mkl"
-        echo "MKLROOT: " $env:MKLROOT
 
 
     - name: Set up Rust
@@ -96,14 +94,13 @@ jobs:
       run: |
         echo "::set-env name=VCPKG_KEEP_ENV_VARS::MKLROOT"
         choco install ninja
-        choco install llvm --version=9.0.1
+        # choco install llvm --version=9.0.1
 
-        $env:PATH += ";C:\Program Files\LLVM\bin"
+        # $env:PATH += ";C:\Program Files\LLVM\bin"
+        # echo "::set-env name=PATH::$env:PATH"
 
         echo "::set-env name=CC::${{ matrix.config.compiler }}"
         echo "::set-env name=CXX::${{ matrix.config.compiler }}"
-
-        echo "::set-env name=PATH::$env:PATH"
 
         & .github\workflows\vsenv.bat -arch=x64 -host_arch=x64
 
@@ -124,10 +121,7 @@ jobs:
       run: |
         cd "${{ github.workspace }}"
         if [ "$RUNNER_OS" == "Windows" ]; then
-          echo $MKLROOT
-          echo $VCPKG_KEEP_ENV_VARS
           export VCPKG_KEEP_ENV_VARS="MKLROOT"
-          echo $VCPKG_KEEP_ENV_VARS
           ./setup_vcpkg.sh --triplet x64-windows --overlay-ports=../tools/vcpkg_ports
         else
           ./setup_vcpkg.sh --overlay-ports=${{ github.workspace }}/tools/vcpkg_ports
