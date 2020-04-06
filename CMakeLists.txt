@@ -16,7 +16,7 @@ endif()
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 enable_language(Rust)
-# https://github.com/Devolutions/CMakeRust
+# NOTE(przemkovv): Based on https://github.com/Devolutions/CMakeRust
 include(CMakeCargo)
 
 if(NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY)
@@ -54,7 +54,7 @@ add_custom_target(release
   COMMENT "Switch CMAKE_BUILD_TYPE to Release"
   )
 add_custom_target(wheel
-  # DEPENDS va_cpp va_rs # TODO(PW) it would be nice if `setup.py` could use the existing build
+  # DEPENDS va_cpp va_rs # TODO(przemkovv) it would be nice if `setup.py` could use the existing build
   COMMAND ${CMAKE_COMMAND} -E env --unset=Platform CMAKE_C_COMPILER="${CMAKE_C_COMPILER}" CMAKE_CXX_COMPILER="${CMAKE_CXX_COMPILER}" ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/setup.py bdist_wheel --dist-dir ${CMAKE_WHEEL_OUTPUT_DIRECTORY}
   #BYPRODUCTS ${CMAKE_WHEEL_OUTPUT_DIRECTORY}/*.whl
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}

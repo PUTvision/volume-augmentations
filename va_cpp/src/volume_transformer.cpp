@@ -3,7 +3,6 @@
 #include <doctest/doctest.h>
 #include <xflens/cxxblas/level3/gemm.tcc>
 
-
 TEST_CASE("Transform shape")
 {
 
@@ -20,12 +19,12 @@ TEST_CASE("Transform shape")
 TEST_CASE("Transform scale")
 {
 
-  const auto transform = Transform(vec3f{1, 1, 1}).scale(vec3f{1, 1, 1.0f});
+  const auto transform = Transform(vec3f{1, 1, 1}).scale(vec3f{2, 1, 0.5f});
   mat4f expectedTransformation{
-      {2, 0, 0, 1},
-      {0, 1, 0, 1},
-      {0, 0, 1.0f, 1},
-      {0, 0, 0, 1},
+      {2.0f, 0.0f, 0.0f, 0.5f},
+      {0.0f, 1.0f, 0.0f, 0.5f},
+      {0.0f, 0.0f, 0.5f, 0.5f},
+      {0.0f, 0.0f, 0.0f, 1.0f},
   };
   CHECK_EQ(transform.transformation, expectedTransformation);
 }

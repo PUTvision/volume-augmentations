@@ -36,10 +36,7 @@ struct Transform
   auto scale(const vec3f &s) -> Transform &
   {
     using xt::linalg::dot;
-    std::cout << "T1" << transformation << '\n';
-    std::cout << "S1" << scale_matrix(s) << '\n';
     transformation = dot(transformation, scale_matrix(s));
-    std::cout << "T2" << transformation << '\n';
     return *this;
   }
 
@@ -51,6 +48,5 @@ struct VolumeTransformer
 {
 
   std::vector<float> volumeData;
-  // Eigen::TensorMap<float, 4> volume;
 };
 

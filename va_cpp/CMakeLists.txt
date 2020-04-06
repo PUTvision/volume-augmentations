@@ -6,11 +6,14 @@ add_definitions(-DXTENSOR_ENABLE_XSIMD)
 add_definitions(-DXTENSOR_USE_XSIMD)
 add_definitions(-DXTENSOR_USE_TBB)
 add_definitions(-DHAVE_CBLAS=1)
-# add_definitions(-DUSE_OPENBLAS=1)
 add_definitions(-DUSE_CXXLAPACK=1)
 add_definitions(-DWITH_MKLBLAS=1)
-add_definitions(-DCXXBLAS_DEBUG=1)
 add_definitions(-DTBB_SUPPRESS_DEPRECATED_MESSAGES)
+
+if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+  add_definitions(-DCXXBLAS_DEBUG=1)
+endif()
+
 message(STATUS "MKLROOT" $ENV{MKLROOT})
 set(BLA_VENDOR Intel10_64lp)
 set(BLA_STATIC OFF)
@@ -22,16 +25,10 @@ find_package(BLAS REQUIRED)
 # message(STATUS "LAPACK LIBRARIES: " ${LAPACK_LIBRARIES})
 # message(STATUS "LAPACK LINKING FLAGS: " ${LAPACK_LINKER_FLAGS})
 
-# find_package(clapack CONFIG REQUIRED)
-# find_package(OpenBLAS CONFIG REQUIRED)
-# find_package(LAPACK REQUIRED)
-# find_package(BLAS REQUIRED)
 find_package(Python3 COMPONENTS Development)
 find_package(pybind11 CONFIG REQUIRED)
 find_package(doctest REQUIRED)
-#find_package(Eigen3 CONFIG REQUIRED)
 find_package(xtensor CONFIG REQUIRED)
-#find_package(xtensor-blas CONFIG REQUIRED)
 find_package(TBB CONFIG REQUIRED)
 
 add_library(va_cpp_static OBJECT)
@@ -74,8 +71,9 @@ if (MSVC)
     pybind11::pybind11
     )
 
-  # By default all dynamic libraries on Windows land in ${CMAKE_BINARY_OUTPUT_DIRECTORY}, thus
-  # we need to copy it to a desired location
+  # NOTE(przemkovv): By default all dynamic libraries on Windows land in
+  # ${CMAKE_BINARY_OUTPUT_DIRECTORY}, thus  we need to copy it to a desired
+  # location
   add_custom_command(TARGET va_cpp POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:va_cpp> ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
     COMMENT "Copying libraries to lib folder")
