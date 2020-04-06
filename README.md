@@ -24,6 +24,11 @@ pip install <name_of_the_version>.whl
 
 ### Compiling from source
 
+#### Prerequisites for C++ subproject for all
+
+- Intel MKL has to be installed by the user and `MKLROOT` environemt variable
+  has to point to the MKL installation directory
+
 #### Prerequisites for C++ subproject for Linux
 
 Install `vcpkg`:
@@ -34,7 +39,7 @@ $ git clone https://github.com/Microsoft/vcpkg.git
 $ cd vcpkg
 $ ./bootstrap-vcpkg.sh
 
-$ ./vcpkg install pybind11 doctest
+$ ./vcpkg install pybind11 doctest xtensor xtensor[xsimd] xtensor[tbb] tbb xtensor-blas intel-mkl xsimd xtl --overlay-port=<PROJECT_DIR>/tools/vcpkg_ports
 ```
 
 To simplify `cmake` commands, `VCPKG_ROOT` enviromental variable can be
@@ -50,7 +55,7 @@ git clone https://github.com/Microsoft/vcpkg.git
 cd vcpkg
 bootstrap-vcpkg.bat
 
-vcpkg install pybind11 doctest --triplet windows-x64
+./vcpkg install pybind11 doctest xtensor xtensor[xsimd] xtensor[tbb] tbb xtensor-blas intel-mkl xsimd xtl --overlay-port=<PROJECT_DIR>/tools/vcpkg_ports --triplet window-x64
 ```
 
 To simplify `cmake` commands, `VCPKG_ROOT` enviromental variable can be
