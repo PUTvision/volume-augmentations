@@ -65,7 +65,7 @@ auto rotationZ_matrix(const float angle) -> mat4f
 
 auto shape_matrix(const vec4f &shape) -> mat4f
 {
-  return translation_matrix(shape / 2.0f);
+  return translation_matrix(shape / 2.0F);
 }
 
 TEST_CASE("Translation matrix")

@@ -27,6 +27,7 @@ find_package(BLAS REQUIRED)
 
 find_package(Python3 COMPONENTS Development)
 find_package(pybind11 CONFIG REQUIRED)
+find_package(fmt CONFIG REQUIRED)
 find_package(doctest REQUIRED)
 find_package(xtensor CONFIG REQUIRED)
 find_package(TBB CONFIG REQUIRED)
@@ -48,6 +49,8 @@ target_link_libraries(va_cpp_static PUBLIC
   pybind11::module
   pybind11::pybind11
   doctest::doctest
+  fmt::fmt
+  fmt::fmt-header-only
   )
 
 target_link_libraries(va_cpp PRIVATE

@@ -44,9 +44,58 @@ struct Transform
   {}
 };
 
+enum class InterpolationType
+{
+  Linear,
+  Nearest,
+};
+
 struct VolumeTransformer
 {
 
-  std::vector<float> volumeData;
+  using Transformation = int;
+  std::size_t volume_count_;
+  std::vector<float> volume_data{};
+  std::vector<Transformation> transformations_{};
+  std::vector<InterpolationType> interpolation_types_{};
+
+  VolumeTransformer(std::size_t volume_count) : volume_count_(volume_count)
+  {}
+  template <typename... Transformations>
+  auto compose(const Transformations &... transformations)
+  {
+    transformations_ = {transformations...};
+  }
+
+  auto compose(const std::vector<Transformation> & /*transformations*/) const
+  {}
+
+  auto rotate()
+  {}
+  [[nodiscard]] auto translate(const vec3f &) const -> Transformation
+  {
+    return {};
+  };
+  [[nodiscard]] auto declare_shape(const vec3f &) const -> Transformation
+  {
+    return {};
+  };
+  [[nodiscard]] auto scale(const vec3f &) const -> Transformation
+  {
+    return {};
+  };
+  [[nodiscard]] auto use_interpolation(InterpolationType interpolation)
+      -> Transformation
+  {
+    interpolation_types_ = {interpolation};
+    return {};
+  }
+  [[nodiscard]] auto
+  use_interpolation(std::vector<InterpolationType> interpolations)
+      -> Transformation
+  {
+    interpolation_types_ = std::move(interpolations);
+    return {};
+  };
 };
 

@@ -4,25 +4,25 @@
 
 auto deg2rad(float deg) -> float
 {
-  return deg * pi_v<float> / 180.0f;
+  return deg * pi_v<float> / 180.0F;
 }
 auto rad2deg(float rad) -> float
 {
-  return rad / pi_v<float> * 180.0f;
+  return rad / pi_v<float> * 180.0F;
 }
 
 TEST_CASE("deg2rad float")
 {
-  CHECK(deg2rad(1) == doctest::Approx(0.017453f));
-  CHECK(deg2rad(45) == doctest::Approx(0.785398f));
-  CHECK(deg2rad(90) == doctest::Approx(1.570796f));
-  CHECK(deg2rad(-45) == doctest::Approx(-0.785398f));
+  CHECK(deg2rad(1) == doctest::Approx(0.017453F));
+  CHECK(deg2rad(45) == doctest::Approx(0.785398F));
+  CHECK(deg2rad(90) == doctest::Approx(1.570796F));
+  CHECK(deg2rad(-45) == doctest::Approx(-0.785398F));
 }
 TEST_CASE("rad2deg float")
 {
-  CHECK(rad2deg(1) == doctest::Approx(57.2957f));
-  CHECK(rad2deg(-1) == doctest::Approx(-57.2957f));
-  CHECK(rad2deg(3.1415) == doctest::Approx(179.994f));
+  CHECK(rad2deg(1) == doctest::Approx(57.2957F));
+  CHECK(rad2deg(-1) == doctest::Approx(-57.2957F));
+  CHECK(rad2deg(3.1415) == doctest::Approx(179.994F));
 }
 /*
 TEST_CASE("deg2rad Vector3f")

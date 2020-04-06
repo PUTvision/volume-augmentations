@@ -94,10 +94,12 @@ else()
     -Werror
     -march=native
     -Weffc++
-    -fconcepts
+    # -fconcepts
     -fdiagnostics-color=always
     )
 endif()
+
+set(CMAKE_CXX_CLANG_TIDY "clang-tidy;--extra-arg=-fsized-deallocation")
 
 add_subdirectory(va_cpp)
 add_subdirectory(va_rs)
