@@ -83,6 +83,7 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     -Weffc++
     # -fconcepts
     -fdiagnostics-color=always
+    -fno-c99-extensions
     -fsized-deallocation
     )
 else()
@@ -99,7 +100,7 @@ else()
     )
 endif()
 
-set(CMAKE_CXX_CLANG_TIDY "clang-tidy;--extra-arg=-fsized-deallocation")
+set(CMAKE_CXX_CLANG_TIDY "clang-tidy;--extra-arg=-fsized-deallocation;--extra-arg=-Wno-c99-extensions")
 
 add_subdirectory(va_cpp)
 add_subdirectory(va_rs)

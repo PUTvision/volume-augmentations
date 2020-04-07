@@ -124,14 +124,15 @@ endif()
 target_sources(va_cpp_static PRIVATE
   src/test_entry.cpp
   src/transform_matrix.cpp
-  src/transformation.cpp
   src/utils.cpp
   src/volume_transformer.cpp
+  src/python_bindings.cpp
   )
 target_sources(va_cpp_static PRIVATE
   src/transform_matrix.h
   src/utils.h
   src/volume_transformer.h
+  src/python_bindings.h
   )
 
 

@@ -3,99 +3,168 @@
 #include "transform_matrix.h"
 #include "types.h"
 
-#include <algorithm>
-#include <array>
-#include <cmath>
+#include <fmt/printf.h>
 #include <iostream>
+#include <variant>
 #include <vector>
-#include <xtensor-blas/xlinalg.hpp>
-#include <xtensor/xfixed.hpp>
 
-struct Transform
+enum class ComposableType
 {
-  mat4f transformation;
-
-  auto rotate(const vec3f &angles) -> Transform &
-  {
-    auto rotX = rotationX_matrix(angles[0]);
-    auto rotY = rotationY_matrix(angles[1]);
-    auto rotZ = rotationZ_matrix(angles[2]);
-    using xt::linalg::dot;
-    transformation = dot(dot(dot(transformation, rotX), rotY), rotZ);
-
-    return *this;
-  }
-
-  auto translate(const vec3f &translation) -> Transform &
-  {
-    using xt::linalg::dot;
-    transformation = dot(transformation, translation_matrix(translation));
-    return *this;
-  }
-
-  auto scale(const vec3f &s) -> Transform &
-  {
-    using xt::linalg::dot;
-    transformation = dot(transformation, scale_matrix(s));
-    return *this;
-  }
-
-  explicit Transform(const vec3f &shape) : transformation(shape_matrix(shape))
-  {}
+  ParametersSetter,
+  Affine
 };
+
+template <typename T>
+struct Range
+{
+  T min;
+  T max;
+};
+template <typename T, typename Tag>
+struct Ranges
+{
+  Range<T> x;
+  Range<T> y;
+  Range<T> z;
+};
+
+struct rotation_ranges_tag;
+struct translation_ranges_tag;
+
+template <typename T>
+using RotationRanges = Ranges<T, rotation_ranges_tag>;
+
+template <typename T>
+using TranslationRanges = Ranges<T, translation_ranges_tag>;
 
 enum class InterpolationType
 {
-  Linear,
-  Nearest,
+  NearestNeighbour,
+  Linear
 };
 
-struct VolumeTransformer
+template <typename DerivedType>
+struct Composable
 {
+  static constexpr ComposableType type = DerivedType::type;
 
-  using Transformation = int;
-  std::size_t volume_count_;
-  std::vector<float> volume_data{};
-  std::vector<Transformation> transformations_{};
-  std::vector<InterpolationType> interpolation_types_{};
-
-  VolumeTransformer(std::size_t volume_count) : volume_count_(volume_count)
-  {}
-  template <typename... Transformations>
-  auto compose(const Transformations &... transformations)
+  template <typename OtherType>
+  constexpr static auto is_stackable_with(OtherType) -> bool
   {
-    transformations_ = {transformations...};
+    return type == DerivedType::type;
+  }
+};
+
+struct UseDefaultSettings : Composable<UseDefaultSettings>
+{
+  static constexpr ComposableType type = ComposableType::ParametersSetter;
+};
+
+struct SetInterpolation : Composable<SetInterpolation>
+{
+  static constexpr ComposableType type = ComposableType::ParametersSetter;
+
+  SetInterpolation(std::initializer_list<InterpolationType> interpolations)
+      : interpolations_{interpolations}
+  {}
+  explicit SetInterpolation(std::vector<InterpolationType> interpolations)
+      : interpolations_{std::move(interpolations)}
+  {}
+
+  std::vector<InterpolationType> interpolations_;
+};
+
+struct SetProbabilityOfApplication : Composable<SetProbabilityOfApplication>
+{
+  static constexpr ComposableType type = ComposableType::ParametersSetter;
+
+  SetProbabilityOfApplication(std::vector<float> probabilities)
+      : probabilities_{std::move(probabilities)}
+  {}
+
+  std::vector<float> probabilities_;
+};
+
+struct SetFillValue : Composable<SetFillValue>
+{
+  static constexpr ComposableType type = ComposableType::ParametersSetter;
+
+  SetFillValue(std::initializer_list<float> fill_values)
+      : fill_values_{fill_values}
+  {}
+  explicit SetFillValue(std::vector<float> fill_values)
+      : fill_values_{std::move(fill_values)}
+  {}
+
+  std::vector<float> fill_values_;
+};
+
+struct RandomRotation : Composable<RandomRotation>
+{
+  static constexpr ComposableType type = ComposableType::Affine;
+
+  RandomRotation(std::initializer_list<RotationRanges<float>> rotation_limits)
+      : rotation_limits_{rotation_limits}
+  {}
+  explicit RandomRotation(std::vector<RotationRanges<float>> rotation_limits)
+      : rotation_limits_{std::move(rotation_limits)}
+  {}
+
+  auto foo() -> void
+  {
+    rotation_limits_ = {};
   }
 
-  auto compose(const std::vector<Transformation> & /*transformations*/) const
-  {}
+  std::vector<RotationRanges<float>> rotation_limits_;
+};
 
-  auto rotate()
+struct RandomTranslation : Composable<RandomTranslation>
+{
+  static constexpr ComposableType type = ComposableType::Affine;
+
+  RandomTranslation(
+      std::initializer_list<TranslationRanges<float>> translation_limits)
+      : translation_limits_{translation_limits}
   {}
-  [[nodiscard]] auto translate(const vec3f &) const -> Transformation
+  explicit RandomTranslation(
+      std::vector<TranslationRanges<float>> translation_limits)
+      : translation_limits_{std::move(translation_limits)}
+  {}
+  auto foo() -> void
   {
-    return {};
-  };
-  [[nodiscard]] auto declare_shape(const vec3f &) const -> Transformation
-  {
-    return {};
-  };
-  [[nodiscard]] auto scale(const vec3f &) const -> Transformation
-  {
-    return {};
-  };
-  [[nodiscard]] auto use_interpolation(InterpolationType interpolation)
-      -> Transformation
-  {
-    interpolation_types_ = {interpolation};
-    return {};
+    translation_limits_ = {};
   }
-  [[nodiscard]] auto
-  use_interpolation(std::vector<InterpolationType> interpolations)
-      -> Transformation
+
+  std::vector<TranslationRanges<float>> translation_limits_;
+};
+
+using AnyComposable = std::variant<UseDefaultSettings,
+                                   SetInterpolation,
+                                   SetProbabilityOfApplication,
+                                   SetFillValue,
+                                   RandomRotation,
+                                   RandomTranslation>;
+
+struct Compose
+{
+  template <typename... Composable>
+  Compose(Composable... transformations) : transformations_{transformations...}
+  {}
+  explicit Compose(std::vector<AnyComposable> transformations)
+      : transformations_{std::move(transformations)}
+  {}
+  void call()
   {
-    interpolation_types_ = std::move(interpolations);
-    return {};
-  };
+    for (const auto &transformation : transformations_) {
+      std::visit(
+          []<typename T>(const T &) {
+            fmt::print("Transformation: {}\n", typeid(T).name());
+          },
+          transformation);
+    }
+  }
+
+private:
+  std::vector<AnyComposable> transformations_;
 };
 
