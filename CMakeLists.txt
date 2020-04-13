@@ -8,13 +8,6 @@ project(volume_augmentations)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
-if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  message(STATUS "No build type selected, default to Release")
-  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type (default Release)" FORCE)
-endif()
-
-message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
-
 enable_language(Rust)
 # NOTE(przemkovv): Based on https://github.com/Devolutions/CMakeRust
 include(CMakeCargo)
@@ -42,15 +35,13 @@ set(CMAKE_COLOR_MAKEFILE ON)
 
 find_package(Python3 COMPONENTS Interpreter)
 
-add_custom_target(debug
+add_custom_target(switch_to_debug
   COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=Debug ${CMAKE_SOURCE_DIR}
-  COMMAND ${CMAKE_COMMAND} --build .
   COMMENT "Switch CMAKE_BUILD_TYPE to Debug"
   )
 
-add_custom_target(release
+add_custom_target(switch_to_release
   COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=Release ${CMAKE_SOURCE_DIR}
-  COMMAND ${CMAKE_COMMAND} --build .
   COMMENT "Switch CMAKE_BUILD_TYPE to Release"
   )
 add_custom_target(wheel
@@ -66,38 +57,7 @@ add_custom_target(wheel_install
   COMMENT "Install wheel"
   )
 
-if (MSVC)
-  # warning level 4 and all warnings as errors
-  add_compile_options(
-    /W4
-    # /WX
-    )
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  # lots of warnings and all warnings as errors
-  add_compile_options(
-    -Wall
-    -Wextra
-    -pedantic
-    -Werror
-    -march=native
-    -Weffc++
-    # -fconcepts
-    -fdiagnostics-color=always
-    -fsized-deallocation
-    )
-else()
-  # lots of warnings and all warnings as errors
-  add_compile_options(
-    -Wall
-    -Wextra
-    -pedantic
-    -Werror
-    -march=native
-    -Weffc++
-    -fconcepts
-    -fdiagnostics-color=always
-    )
-endif()
+set(CMAKE_CXX_CLANG_TIDY "clang-tidy;--extra-arg=-fsized-deallocation;--extra-arg=-Wno-c99-extensions")
 
 add_subdirectory(va_cpp)
 add_subdirectory(va_rs)
