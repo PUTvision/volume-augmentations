@@ -1,18 +1,33 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.13)
+include(CheckCXXCompilerFlag)
 
 project(va_cpp CXX)
-set(CMAKE_CXX_STANDARD 20)
-add_definitions(-DXTENSOR_ENABLE_XSIMD)
-add_definitions(-DXTENSOR_USE_XSIMD)
-add_definitions(-DXTENSOR_USE_TBB)
-add_definitions(-DHAVE_CBLAS=1)
-add_definitions(-DUSE_CXXLAPACK=1)
-add_definitions(-DWITH_MKLBLAS=1)
-add_definitions(-DTBB_SUPPRESS_DEPRECATED_MESSAGES)
 
-if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-  add_definitions(-DCXXBLAS_DEBUG=1)
+option (FORCE_COLORED_OUTPUT "Always produce ANSI-colored output (GNU/Clang only)." FALSE)
+if (${FORCE_COLORED_OUTPUT})
+  check_cxx_compiler_flag(-fdiagnostics-color=always COMPILER_COLOR_OUTPUT)
+  if (COMPILER_COLOR_OUTPUT)
+    add_compile_options (-fdiagnostics-color=always)
+  endif()
+endif ()
+
+check_cxx_compiler_flag(-fconcepts COMPILER_CONCEPTS_SUPPORT)
+if (COMPILER_CONCEPTS_SUPPORT)
+  # add_compile_options (-fconcepts)
 endif()
+
+set(COMPILE_OPTIONS_MSVC
+  )
+set(COMPILE_OPTIONS_CLANG
+  -fsized-deallocation
+  )
+set(COMPILE_OPTIONS_GCC
+  )
+add_compile_options(
+  "$<$<CXX_COMPILER_ID:Clang>:${COMPILE_OPTIONS_CLANG}>"
+  "$<$<CXX_COMPILER_ID:MSVC>:${COMPILE_OPTIONS_MSVC}>"
+  "$<$<CXX_COMPILER_ID:GNU>:${COMPILE_OPTIONS_GCC}>"
+  )
 
 message(STATUS "MKLROOT" $ENV{MKLROOT})
 set(BLA_VENDOR Intel10_64lp)
@@ -30,19 +45,67 @@ find_package(pybind11 CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(doctest REQUIRED)
 find_package(xtensor CONFIG REQUIRED)
+find_package(xtensor-blas CONFIG REQUIRED)
 find_package(TBB CONFIG REQUIRED)
 
 add_library(va_cpp_static OBJECT)
 pybind11_add_module(va_cpp SHARED $<TARGET_OBJECTS:va_cpp_static>)
 add_executable(va_cpp_tests $<TARGET_OBJECTS:va_cpp_static>)
 
+target_compile_definitions(va_cpp_static PRIVATE $<$<CONFIG:Debug>:CXXBLAS_DEBUG=1>)
+
+target_compile_definitions(va_cpp_static
+  PRIVATE
+  -DXTENSOR_ENABLE_XSIMD
+  -DXTENSOR_USE_XSIMD
+  -DXTENSOR_USE_TBB
+  -DHAVE_CBLAS=1
+  -DUSE_CXXLAPACK=1
+  -DWITH_MKLBLAS=1
+  -DTBB_SUPPRESS_DEPRECATED_MESSAGES
+  )
+
+set(COMPILE_OPTIONS_WARN_MSVC
+  /W4
+  /WX
+  )
+set(COMPILE_OPTIONS_WARN_CLANG
+  -Wall
+  -Wextra
+  -pedantic
+  -Werror
+  -Weffc++
+  -Wno-c99-extensions
+  )
+set(COMPILE_OPTIONS_WARN_GCC
+  -Wall
+  -Wextra
+  -pedantic
+  -Werror
+  -Weffc++
+  )
+target_compile_options(va_cpp PRIVATE
+  "$<$<CXX_COMPILER_ID:Clang>:${COMPILE_OPTIONS_CLANG}>"
+  "$<$<CXX_COMPILER_ID:MSVC>:${COMPILE_OPTIONS_MSVC}>"
+  "$<$<CXX_COMPILER_ID:GNU>:${COMPILE_OPTIONS_GCC}>"
+  )
+target_compile_options(va_cpp_tests PRIVATE
+  "$<$<CXX_COMPILER_ID:Clang>:${COMPILE_OPTIONS_CLANG}>"
+  "$<$<CXX_COMPILER_ID:MSVC>:${COMPILE_OPTIONS_MSVC}>"
+  "$<$<CXX_COMPILER_ID:GNU>:${COMPILE_OPTIONS_GCC}>"
+  )
+target_compile_options(va_cpp_static PRIVATE
+  "$<$<CXX_COMPILER_ID:Clang>:${COMPILE_OPTIONS_CLANG}>"
+  "$<$<CXX_COMPILER_ID:MSVC>:${COMPILE_OPTIONS_MSVC}>"
+  "$<$<CXX_COMPILER_ID:GNU>:${COMPILE_OPTIONS_GCC}>"
+  )
+
 target_link_libraries(va_cpp_static PUBLIC
   ${BLAS_LIBRARIES}
   ${LAPACK_LIBRARIES}
   TBB::tbb
-  xtensor-blas
   xtensor::use_xsimd
-  xtensor::optimize
+  xtensor-blas
   xtensor::optimize
   xtensor::use_TBB
   pybind11::embed
@@ -54,26 +117,13 @@ target_link_libraries(va_cpp_static PUBLIC
   )
 
 target_link_libraries(va_cpp PRIVATE
-  ${BLAS_LIBRARIES}
-  ${LAPACK_LIBRARIES}
-  TBB::tbb
+  va_cpp_static
   )
 target_link_libraries(va_cpp_tests PRIVATE
-  ${BLAS_LIBRARIES}
-  ${LAPACK_LIBRARIES}
-  TBB::tbb
-  pybind11::embed
-  pybind11::module
-  pybind11::pybind11
-  doctest::doctest)
+  va_cpp_static
+  )
 
 if (MSVC)
-  target_link_libraries(va_cpp_tests PRIVATE
-    pybind11::embed
-    pybind11::module
-    pybind11::pybind11
-    )
-
   # NOTE(przemkovv): By default all dynamic libraries on Windows land in
   # ${CMAKE_BINARY_OUTPUT_DIRECTORY}, thus  we need to copy it to a desired
   # location
@@ -114,12 +164,6 @@ if (ipo_supported)
 else()
   message(STATUS "IPO / LTO not supported: <${error}>")
 endif()
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libstdc++")
-  # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-  # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++ -lc++abi")
-endif()
 
 target_sources(va_cpp_static PRIVATE
   src/test_entry.cpp
@@ -134,7 +178,6 @@ target_sources(va_cpp_static PRIVATE
   src/volume_transformer.h
   src/python_bindings.h
   )
-
 
 target_sources(va_cpp_tests PRIVATE
   tests/main.cpp
