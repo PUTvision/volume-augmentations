@@ -118,4 +118,7 @@ setup(
     },
     zip_safe=False,
     install_requires=['numpy~=1.18.2'],
+    extras_require={
+        'tests': ['pytest', 'pytest-benchmark']
+    },
 )

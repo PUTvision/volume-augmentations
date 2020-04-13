@@ -110,7 +110,7 @@ jobs:
 
     - name: Install dependencies (common)
       run: |
-        python -m pip install wheel
+        python -m pip install wheel pytest pytest-benchmark
       shell: bash
 
     - name: Cache VCPKG
@@ -156,3 +156,7 @@ jobs:
       with:
         name: wheels
         path: dist
+
+    - name: Test with pytest
+        run: |
+          pytest va_py
