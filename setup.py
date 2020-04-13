@@ -1,10 +1,11 @@
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
-
-from setuptools import setup, Command, glob, Extension
 from typing import Optional, Tuple, List
+
+from setuptools import setup, Command, glob
 
 
 class CleanCommand(Command):
@@ -94,7 +95,9 @@ def compile_extensions() -> List[str]:
 
     build_dir.mkdir(exist_ok=True)
     try:
-        subprocess.check_call(['cmake', '-G', 'Ninja', str(source_dir)], cwd=str(build_dir), env=os.environ)
+        python_version = f'{sys.version_info[0]}.{sys.version_info[1]}'
+        subprocess.check_call(['cmake', '-G', 'Ninja', '-DPYTHON_VERSION=', python_version, str(source_dir)],
+                              cwd=str(build_dir), env=os.environ)
         subprocess.check_call(['cmake', '--build', '.'], cwd=str(build_dir), env=os.environ)
     except subprocess.CalledProcessError:
         raise RuntimeError('Running CMake failed')
