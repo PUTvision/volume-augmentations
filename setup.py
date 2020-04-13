@@ -3,7 +3,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from setuptools import setup, Command, glob
+from setuptools import setup, Command, glob, Extension
 from typing import Optional, Tuple, List
 
 
@@ -107,6 +107,17 @@ def compile_extensions() -> List[str]:
     return list(map(str, built_paths))
 
 
+try:
+    from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+
+    class bdist_wheel(_bdist_wheel):
+        def finalize_options(self):
+            super().finalize_options()
+            self.root_is_pure = False
+except ImportError:
+    bdist_wheel = None
+
+
 compile_extensions()
 setup(
     name='volume-augmentations',
@@ -115,6 +126,7 @@ setup(
     package_dir={'volume_augmentations': 'va_py/volume_augmentations'},
     cmdclass={
         'clean': CleanCommand,
+        'bdist_wheel': bdist_wheel
     },
     zip_safe=False,
     install_requires=['numpy~=1.18.2'],
