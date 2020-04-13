@@ -57,16 +57,20 @@ add_custom_target(wheel_install
   COMMENT "Install wheel"
   )
 
-find_program(
-  CLANG_TIDY_EXE
-  NAMES "clang-tidy"
-  DOC "Path to clang-tidy executable"
-  )
-if(NOT CLANG_TIDY_EXE)
-  message(STATUS "clang-tidy not found.")
-else()
-  message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
-  set(CMAKE_CXX_CLANG_TIDY "clang-tidy;--extra-arg=-fsized-deallocation;--extra-arg=-Wno-c99-extensions")
+
+option (ENABLE_CLANG_TIDY "Enable clang-tidy" FALSE)
+if (ENABLE_CLANG_TIDY)
+  find_program(
+    CLANG_TIDY_EXE
+    NAMES "clang-tidy"
+    DOC "Path to clang-tidy executable"
+    )
+  if(NOT CLANG_TIDY_EXE)
+    message(STATUS "clang-tidy not found.")
+  else()
+    message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
+    set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-p=${CMAKE_BINARY_DIR};--extra-arg=-fsized-deallocation;--extra-arg=-Wno-c99-extensions")
+  endif()
 endif()
 
 add_subdirectory(va_cpp)
