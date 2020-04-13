@@ -79,7 +79,7 @@ jobs:
         sudo add-apt-repository "deb https://apt.repos.intel.com/mkl all main"
         sudo add-apt-repository "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main"
         sudo apt-get -y update
-        sudo apt-get -y install ninja-build gfortran
+        sudo apt-get -y install ninja-build gfortran clang-tidy
         sudo apt-get -y install intel-mkl-64bit-2020.0-088
 
         echo "::set-env name=MKLROOT::/opt/intel/mkl"
