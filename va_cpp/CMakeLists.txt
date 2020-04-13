@@ -125,6 +125,9 @@ if (MSVC)
   # ${CMAKE_BINARY_OUTPUT_DIRECTORY}, thus  we need to copy it to a desired
   # location
   add_custom_command(TARGET va_cpp POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+    COMMENT "Creating required subdirectory in lib")
+  add_custom_command(TARGET va_cpp POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:va_cpp> ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
     COMMENT "Copying libraries to lib folder")
 endif()
