@@ -60,12 +60,11 @@ jobs:
         echo "::set-env name=PATH::$env:PATH"
         ls ~/mkl/installed/compilers_and_libraries_2020.1.216/windows/mkl
 
-
-    - name: Set up Rust
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly
-        override: true
+#    - name: Set up Rust
+#      uses: actions-rs/toolchain@v1
+#      with:
+#        toolchain: nightly
+#        override: true
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v1
@@ -133,18 +132,18 @@ jobs:
         fi
       shell: bash
 
-    - name: Cache Cargo
-      uses: actions/cache@v1
-      id: cache-cargo
-      with:
-        path: build/va_rs
-        key: ${{ runner.os }}-cargo-${{ hashFiles('va_rs/Cargo.toml') }}
+#    - name: Cache Cargo
+#      uses: actions/cache@v1
+#      id: cache-cargo
+#      with:
+#        path: build/va_rs
+#        key: ${{ runner.os }}-cargo-${{ hashFiles('va_rs/Cargo.toml') }}
 
-    - name: Setup Cargo
-      if: steps.cache-cargo.outputs.cache-hit != 'true'
-      run: |
-        echo "MKLROOT: $MKLROOT"
-        cargo check --release -Z features=itarget --manifest-path va_rs/Cargo.toml
+#    - name: Setup Cargo
+#      if: steps.cache-cargo.outputs.cache-hit != 'true'
+#      run: |
+#        echo "MKLROOT: $MKLROOT"
+#        cargo check --release -Z features=itarget --manifest-path va_rs/Cargo.toml
 
     - name: Build
       run: |
