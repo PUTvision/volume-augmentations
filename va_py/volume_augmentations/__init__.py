@@ -1,1 +1,1 @@
-from va_cpp import *
+from .va_cpp import *
