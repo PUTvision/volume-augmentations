@@ -3,6 +3,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from sysconfig import get_paths
 from typing import Optional, Tuple, List
 
 from setuptools import setup, Command, glob
@@ -96,7 +97,11 @@ def compile_extensions() -> List[str]:
     build_dir.mkdir(exist_ok=True)
     try:
         python_version = f'{sys.version_info[0]}.{sys.version_info[1]}'
-        subprocess.check_call(['cmake', '-G', 'Ninja', '-DPYTHON_VERSION=', python_version, str(source_dir)],
+        python_paths = get_paths()
+        subprocess.check_call(['cmake', '-G', 'Ninja', '-DPYTHON_VERSION=', python_version,
+                               '-DPYTHON_EXECUTABLE=', sys.executable,
+                               '-DPYTHON_INCLUDE_DIR=', python_paths['include'],
+                               '-DPYTHON_LIBRARY=', python_paths['stdlib'], str(source_dir)],
                               cwd=str(build_dir), env=os.environ)
         subprocess.check_call(['cmake', '--build', '.'], cwd=str(build_dir), env=os.environ)
     except subprocess.CalledProcessError:
