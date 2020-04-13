@@ -61,7 +61,7 @@ def get_built_paths(build_dir: Path) -> Optional[List[Path]]:
             # elif entry.name.startswith('va_rs') and extension_is_valid:
             #     va_rs_path = entry
             elif extension_is_valid:
-                other_paths.append(other_paths)
+                other_paths.append(entry)
 
     return [va_cpp_path, *other_paths] if va_cpp_path else None
 
