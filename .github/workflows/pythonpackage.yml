@@ -147,6 +147,7 @@ jobs:
 
     - name: Build
       run: |
+        python --version
         python setup.py bdist_wheel
       env:
         VCPKG_ROOT: ${{ github.workspace }}/vcpkg
