@@ -158,5 +158,5 @@ jobs:
         path: dist
 
     - name: Test with pytest
-        run: |
-          pytest va_py
+      run: |
+        pytest va_py
