@@ -31,35 +31,60 @@ def get_source_and_build_dir() -> Tuple[Path, Path]:
     return source_dir, source_dir / 'build'
 
 
+def get_lib_dir(build_dir: Path) -> Path:
+    return build_dir / 'lib' / 'volume_augmentations'
+
+
+def get_bin_dir(build_dir: Path) -> Path:
+    return build_dir / 'bin'
+
+
 def get_built_paths(build_dir: Path) -> Optional[List[Path]]:
-    lib_dir = build_dir / 'lib' / 'volume_augmentations'
-    bin_dir = build_dir / 'bin'
+    lib_dir = get_lib_dir(build_dir)
+    bin_dir = get_bin_dir(build_dir)
     if not lib_dir.exists():
         return None
 
     va_cpp_path = None
-    va_rs_path = None
+    # va_rs_path = None
+    other_paths = []
 
     def check_extension(filename: str):
-        if filename.endswith(".so") or filename.endswith('.pyd') or filename.endswith('.dll'):
-            return True
-        return False
+        return filename.endswith(".so") or filename.endswith('.pyd') or filename.endswith('.dll')
 
     dirs = [lib_dir, bin_dir]
-    for dir in dirs:
-        for entry in dir.iterdir():
-            if entry.name.startswith('va_cpp') and check_extension(entry.name):
+    for directory in dirs:
+        for entry in directory.iterdir():
+            extension_is_valid = check_extension(entry.name)
+            if entry.name.startswith('va_cpp') and extension_is_valid:
                 va_cpp_path = entry
-            elif entry.name.startswith('va_rs') and check_extension(entry.name):
-                va_rs_path = entry
+            # elif entry.name.startswith('va_rs') and extension_is_valid:
+            #     va_rs_path = entry
+            elif extension_is_valid:
+                other_paths.append(other_paths)
 
-    return [va_cpp_path, va_rs_path] if all((va_cpp_path, va_rs_path)) else None
+    return [va_cpp_path, *other_paths] if va_cpp_path else None
+
+
+def copy_libraries_to_lib_if_needed(built_paths: List[Path], build_dir: Path) -> List[Path]:
+    lib_dir = get_lib_dir(build_dir)
+    corrected_built_paths = []
+    for built_path in built_paths:
+        if lib_dir not in built_path.parents:
+            new_path = lib_dir / built_path.name
+            shutil.copy2(built_path, new_path)
+            built_path = new_path
+
+        corrected_built_paths.append(built_path)
+
+    return corrected_built_paths
 
 
 def compile_extensions() -> List[str]:
     source_dir, build_dir = get_source_and_build_dir()
     built_paths = get_built_paths(build_dir)
     if built_paths is not None:
+        built_paths = copy_libraries_to_lib_if_needed(built_paths, build_dir)
         return list(map(str, built_paths))
 
     try:
@@ -68,7 +93,6 @@ def compile_extensions() -> List[str]:
         raise RuntimeError('CMake must be installed to build this project')
 
     build_dir.mkdir(exist_ok=True)
-    #  print(os.environ)
     try:
         subprocess.check_call(['cmake', '-G', 'Ninja', str(source_dir)], cwd=str(build_dir), env=os.environ)
         subprocess.check_call(['cmake', '--build', '.'], cwd=str(build_dir), env=os.environ)
@@ -78,6 +102,9 @@ def compile_extensions() -> List[str]:
     built_paths = get_built_paths(build_dir)
     if built_paths is None:
         raise RuntimeError('Compiled libraries not found')
+
+    built_paths = copy_libraries_to_lib_if_needed(built_paths, build_dir)
+    return list(map(str, built_paths))
 
 
 compile_extensions()

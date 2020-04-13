@@ -8,9 +8,9 @@ project(volume_augmentations)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
-enable_language(Rust)
+# enable_language(Rust)
 # NOTE(przemkovv): Based on https://github.com/Devolutions/CMakeRust
-include(CMakeCargo)
+# include(CMakeCargo)
 
 if(NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -74,7 +74,7 @@ if (ENABLE_CLANG_TIDY)
 endif()
 
 add_subdirectory(va_cpp)
-add_subdirectory(va_rs)
+# add_subdirectory(va_rs)
 
 enable_testing()
 add_test(NAME va_py_tests
