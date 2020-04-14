@@ -52,11 +52,12 @@ jobs:
     - name: Configure MKL  (Windows)
       if: runner.os == 'Windows'
       run: |
-        echo "::set-env name=MKLROOT::$HOME/mkl/installed/compilers_and_libraries_2020.1.216/windows/mkl"
-        $env:PATH += ";$HOME/mkl/installed/compilers_and_libraries_2020.1.216/windows/compiler/lib/intel64_win"
-        $env:PATH += ";$HOME/mkl/installed/compilers_and_libraries_2020.1.216/windows/redist/intel64_win/compiler"
-        $env:PATH += ";$HOME/mkl/installed/compilers_and_libraries_2020.1.216/windows/redist/intel64_win/mkl"
-        $env:PATH += ";$HOME/mkl/installed/compilers_and_libraries_2020.1.216/windows/redist/intel64_win/tbb"
+        filter replace-slash {$_ -replace "\\", "/"}
+        echo "::set-env name=MKLROOT::$HOME/mkl/installed/compilers_and_libraries_2020.1.216/windows/mkl" | replace-slash
+        $env:PATH += ";$HOME/mkl/installed/compilers_and_libraries_2020.1.216/windows/compiler/lib/intel64_win" | replace-slash
+        $env:PATH += ";$HOME/mkl/installed/compilers_and_libraries_2020.1.216/windows/redist/intel64_win/compiler" | replace-slash
+        $env:PATH += ";$HOME/mkl/installed/compilers_and_libraries_2020.1.216/windows/redist/intel64_win/mkl" | replace-slash
+        $env:PATH += ";$HOME/mkl/installed/compilers_and_libraries_2020.1.216/windows/redist/intel64_win/tbb" | replace-slash
         echo "::set-env name=PATH::$env:PATH"
 
 #    - name: Set up Rust
