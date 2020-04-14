@@ -96,7 +96,8 @@ def compile_extensions() -> List[str]:
     build_dir.mkdir(exist_ok=True)
     try:
         python_version = f'{sys.version_info[0]}.{sys.version_info[1]}'
-        subprocess.check_call(['cmake', '-G', 'Ninja', '-DPYTHON_VERSION=', python_version, str(source_dir)],
+        subprocess.check_call(['cmake', '-G', 'Ninja', '-DPYTHON_VERSION=', python_version,
+                               '-DPYBIND11_PYTHON_VERSION=', python_version, str(source_dir)],
                               cwd=str(build_dir), env=os.environ)
         subprocess.check_call(['cmake', '--build', '.'], cwd=str(build_dir), env=os.environ)
     except subprocess.CalledProcessError:
