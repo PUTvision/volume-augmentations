@@ -8,16 +8,9 @@ project(volume_augmentations)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
-if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  message(STATUS "No build type selected, default to Release")
-  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type (default Release)" FORCE)
-endif()
-
-message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
-
-enable_language(Rust)
-# https://github.com/Devolutions/CMakeRust
-include(CMakeCargo)
+# enable_language(Rust)
+# NOTE(przemkovv): Based on https://github.com/Devolutions/CMakeRust
+# include(CMakeCargo)
 
 if(NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -42,19 +35,17 @@ set(CMAKE_COLOR_MAKEFILE ON)
 
 find_package(Python3 COMPONENTS Interpreter)
 
-add_custom_target(debug
+add_custom_target(switch_to_debug
   COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=Debug ${CMAKE_SOURCE_DIR}
-  COMMAND ${CMAKE_COMMAND} --build .
   COMMENT "Switch CMAKE_BUILD_TYPE to Debug"
   )
 
-add_custom_target(release
+add_custom_target(switch_to_release
   COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=Release ${CMAKE_SOURCE_DIR}
-  COMMAND ${CMAKE_COMMAND} --build .
   COMMENT "Switch CMAKE_BUILD_TYPE to Release"
   )
 add_custom_target(wheel
-  # DEPENDS va_cpp va_rs # TODO(PW) it would be nice if `setup.py` could use the existing build
+  # DEPENDS va_cpp va_rs # TODO(przemkovv) it would be nice if `setup.py` could use the existing build
   COMMAND ${CMAKE_COMMAND} -E env --unset=Platform CMAKE_C_COMPILER="${CMAKE_C_COMPILER}" CMAKE_CXX_COMPILER="${CMAKE_CXX_COMPILER}" ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/setup.py bdist_wheel --dist-dir ${CMAKE_WHEEL_OUTPUT_DIRECTORY}
   #BYPRODUCTS ${CMAKE_WHEEL_OUTPUT_DIRECTORY}/*.whl
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -67,8 +58,23 @@ add_custom_target(wheel_install
   )
 
 
+option (ENABLE_CLANG_TIDY "Enable clang-tidy" FALSE)
+if (ENABLE_CLANG_TIDY)
+  find_program(
+    CLANG_TIDY_EXE
+    NAMES "clang-tidy"
+    DOC "Path to clang-tidy executable"
+    )
+  if(NOT CLANG_TIDY_EXE)
+    message(STATUS "clang-tidy not found.")
+  else()
+    message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
+    set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-p=${CMAKE_BINARY_DIR};--extra-arg=-fsized-deallocation;--extra-arg=-Wno-c99-extensions")
+  endif()
+endif()
+
 add_subdirectory(va_cpp)
-add_subdirectory(va_rs)
+# add_subdirectory(va_rs)
 
 enable_testing()
 add_test(NAME va_py_tests
