@@ -118,7 +118,7 @@ jobs:
       id: cache-vcpkg
       with:
         path: ${{ github.workspace }}/vcpkg
-        key: ${{ runner.os }}-py${{ matrix.python-version }}-vcpkg-${{ hashFiles('setup_vcpkg.sh') }}
+        key: ${{ runner.os }}-vcpkg-${{ hashFiles('setup_vcpkg.sh') }}
 
     - name: Setup VCPKG
       if: steps.cache-vcpkg.outputs.cache-hit != 'true'
