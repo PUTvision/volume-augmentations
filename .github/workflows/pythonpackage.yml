@@ -118,7 +118,7 @@ jobs:
       id: cache-vcpkg
       with:
         path: ${{ github.workspace }}/vcpkg
-        key: ${{ runner.os }}-vcpkg-${{ hashFiles('setup_vcpkg.sh') }}
+        key: ${{ runner.os }}-vcpkg-${{ hashFiles('setup_vcpkg.sh') }}-${{ hashFiles('tools/vcpkg_ports/**') }}
 
     - name: Setup VCPKG
       if: steps.cache-vcpkg.outputs.cache-hit != 'true'
