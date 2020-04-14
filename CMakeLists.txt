@@ -8,9 +8,9 @@ project(volume_augmentations)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
-enable_language(Rust)
+# enable_language(Rust)
 # NOTE(przemkovv): Based on https://github.com/Devolutions/CMakeRust
-include(CMakeCargo)
+# include(CMakeCargo)
 
 if(NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -57,10 +57,23 @@ add_custom_target(wheel_install
   COMMENT "Install wheel"
   )
 
-set(CMAKE_CXX_CLANG_TIDY "clang-tidy;--extra-arg=-fsized-deallocation;--extra-arg=-Wno-c99-extensions")
+option (ENABLE_CLANG_TIDY "Enable clang-tidy" FALSE)
+if (ENABLE_CLANG_TIDY)
+  find_program(
+    CLANG_TIDY_EXE
+    NAMES "clang-tidy"
+    DOC "Path to clang-tidy executable"
+    )
+  if(NOT CLANG_TIDY_EXE)
+    message(STATUS "clang-tidy not found.")
+  else()
+    message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
+    set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-p=${CMAKE_BINARY_DIR};--extra-arg=-fsized-deallocation;--extra-arg=-Wno-c99-extensions")
+  endif()
+endif()
 
 add_subdirectory(va_cpp)
-add_subdirectory(va_rs)
+# add_subdirectory(va_rs)
 
 enable_testing()
 add_test(NAME va_py_tests

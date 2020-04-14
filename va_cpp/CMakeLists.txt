@@ -40,7 +40,11 @@ find_package(BLAS REQUIRED)
 # message(STATUS "LAPACK LIBRARIES: " ${LAPACK_LIBRARIES})
 # message(STATUS "LAPACK LINKING FLAGS: " ${LAPACK_LINKER_FLAGS})
 
-find_package(Python3 COMPONENTS Development)
+if(DEFINED PYTHON_VERSION)
+  find_package(Python3 ${PYTHON_VERSION} EXACT COMPONENTS Development REQUIRED)
+else()
+  find_package(Python3 COMPONENTS Development REQUIRED)
+endif()
 find_package(pybind11 CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(doctest REQUIRED)
@@ -128,8 +132,19 @@ if (MSVC)
   # ${CMAKE_BINARY_OUTPUT_DIRECTORY}, thus  we need to copy it to a desired
   # location
   add_custom_command(TARGET va_cpp POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:va_cpp> ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
-    COMMENT "Copying libraries to lib folder")
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+    COMMENT "Creating required subdirectory in lib")
+  add_custom_command(TARGET va_cpp POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:va_cpp> ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+          COMMENT "Copying libraries to lib folder")
+
+  # NOTE(rivi): we need to copy some MKL DLLs so our package imports without error
+  add_custom_command(TARGET va_cpp POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different $ENV{MKLROOT}/../redist/intel64_win/mkl/mkl_core.dll ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+          COMMENT "Copy mkl_core.dll")
+  add_custom_command(TARGET va_cpp POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different $ENV{MKLROOT}/../redist/intel64_win/mkl/mkl_intel_thread.dll ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+          COMMENT "Copy mkl_intel_thread.dll")
 endif()
 
 set_target_properties(va_cpp va_cpp_tests va_cpp_static

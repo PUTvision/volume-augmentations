@@ -2,7 +2,7 @@ name: Python package
 
 on:
   push:
-    branches: [ master, mkl_library ]
+    branches: [ master ]
   pull_request:
     branches: [ master ]
 
@@ -27,7 +27,7 @@ jobs:
             compiler: cl
           # - os: windows-latest
           #   compiler: clang-cl
-        python-version: [3.5, 3.6, 3.7, 3.8]
+        python-version: [3.6, 3.7, 3.8]
 
     steps:
     - uses: actions/checkout@v2
@@ -52,20 +52,19 @@ jobs:
     - name: Configure MKL  (Windows)
       if: runner.os == 'Windows'
       run: |
-        echo "::set-env name=MKLROOT::~/mkl/installed/compilers_and_libraries_2020.1.216/windows/mkl"
-        $env:PATH += ";~/mkl/installed/compilers_and_libraries_2020.1.216/windows/compiler/lib/intel64_win"
-        $env:PATH += ";~/mkl/installed/compilers_and_libraries_2020.1.216/windows/redist/intel64_win/compiler"
-        $env:PATH += ";~/mkl/installed/compilers_and_libraries_2020.1.216/windows/redist/intel64_win/mkl"
-        $env:PATH += ";~/mkl/installed/compilers_and_libraries_2020.1.216/windows/redist/intel64_win/tbb"
+        filter replace-slash {$_ -replace "\\", "/"}
+        echo "::set-env name=MKLROOT::$HOME/mkl/installed/compilers_and_libraries_2020.1.216/windows/mkl" | replace-slash
+        $env:PATH += ";$HOME/mkl/installed/compilers_and_libraries_2020.1.216/windows/compiler/lib/intel64_win" | replace-slash
+        $env:PATH += ";$HOME/mkl/installed/compilers_and_libraries_2020.1.216/windows/redist/intel64_win/compiler" | replace-slash
+        $env:PATH += ";$HOME/mkl/installed/compilers_and_libraries_2020.1.216/windows/redist/intel64_win/mkl" | replace-slash
+        $env:PATH += ";$HOME/mkl/installed/compilers_and_libraries_2020.1.216/windows/redist/intel64_win/tbb" | replace-slash
         echo "::set-env name=PATH::$env:PATH"
-        ls ~/mkl/installed/compilers_and_libraries_2020.1.216/windows/mkl
 
-
-    - name: Set up Rust
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly
-        override: true
+#    - name: Set up Rust
+#      uses: actions-rs/toolchain@v1
+#      with:
+#        toolchain: nightly
+#        override: true
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v1
@@ -79,7 +78,7 @@ jobs:
         sudo add-apt-repository "deb https://apt.repos.intel.com/mkl all main"
         sudo add-apt-repository "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main"
         sudo apt-get -y update
-        sudo apt-get -y install ninja-build gfortran
+        sudo apt-get -y install ninja-build gfortran clang-tidy
         sudo apt-get -y install intel-mkl-64bit-2020.0-088
 
         echo "::set-env name=MKLROOT::/opt/intel/mkl"
@@ -111,7 +110,7 @@ jobs:
 
     - name: Install dependencies (common)
       run: |
-        python -m pip install wheel
+        python -m pip install wheel pytest pytest-benchmark
       shell: bash
 
     - name: Cache VCPKG
@@ -119,7 +118,7 @@ jobs:
       id: cache-vcpkg
       with:
         path: ${{ github.workspace }}/vcpkg
-        key: ${{ runner.os }}-vcpkg-${{ hashFiles('setup_vcpkg.sh') }}
+        key: ${{ runner.os }}-vcpkg-${{ hashFiles('setup_vcpkg.sh') }}-${{ hashFiles('tools/vcpkg_ports/**') }}
 
     - name: Setup VCPKG
       if: steps.cache-vcpkg.outputs.cache-hit != 'true'
@@ -133,21 +132,22 @@ jobs:
         fi
       shell: bash
 
-    - name: Cache Cargo
-      uses: actions/cache@v1
-      id: cache-cargo
-      with:
-        path: build/va_rs
-        key: ${{ runner.os }}-cargo-${{ hashFiles('va_rs/Cargo.toml') }}
+#    - name: Cache Cargo
+#      uses: actions/cache@v1
+#      id: cache-cargo
+#      with:
+#        path: build/va_rs
+#        key: ${{ runner.os }}-cargo-${{ hashFiles('va_rs/Cargo.toml') }}
 
-    - name: Setup Cargo
-      if: steps.cache-cargo.outputs.cache-hit != 'true'
-      run: |
-        echo "MKLROOT: $MKLROOT"
-        cargo check --release -Z features=itarget --manifest-path va_rs/Cargo.toml
+#    - name: Setup Cargo
+#      if: steps.cache-cargo.outputs.cache-hit != 'true'
+#      run: |
+#        echo "MKLROOT: $MKLROOT"
+#        cargo check --release -Z features=itarget --manifest-path va_rs/Cargo.toml
 
     - name: Build
       run: |
+        python --version
         python setup.py bdist_wheel
       env:
         VCPKG_ROOT: ${{ github.workspace }}/vcpkg
@@ -157,3 +157,9 @@ jobs:
       with:
         name: wheels
         path: dist
+
+    - name: Test with pytest
+      run: |
+        pip install dist/*.whl
+        pytest va_py
+      shell: bash
