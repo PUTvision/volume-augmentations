@@ -46,6 +46,7 @@ else()
   find_package(Python3 COMPONENTS Development REQUIRED)
 endif()
 find_package(pybind11 CONFIG REQUIRED)
+find_package(fmt CONFIG REQUIRED)
 find_package(doctest REQUIRED)
 find_package(xtensor CONFIG REQUIRED)
 find_package(xtensor-blas CONFIG REQUIRED)
@@ -115,6 +116,8 @@ target_link_libraries(va_cpp_static PUBLIC
   pybind11::module
   pybind11::pybind11
   doctest::doctest
+  fmt::fmt
+  fmt::fmt-header-only
   )
 
 target_link_libraries(va_cpp PRIVATE
@@ -180,14 +183,15 @@ endif()
 target_sources(va_cpp_static PRIVATE
   src/test_entry.cpp
   src/transform_matrix.cpp
-  src/transformation.cpp
   src/utils.cpp
   src/volume_transformer.cpp
+  src/python_bindings.cpp
   )
 target_sources(va_cpp_static PRIVATE
   src/transform_matrix.h
   src/utils.h
   src/volume_transformer.h
+  src/python_bindings.h
   )
 
 target_sources(va_cpp_tests PRIVATE

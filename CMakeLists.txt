@@ -57,7 +57,6 @@ add_custom_target(wheel_install
   COMMENT "Install wheel"
   )
 
-
 option (ENABLE_CLANG_TIDY "Enable clang-tidy" FALSE)
 if (ENABLE_CLANG_TIDY)
   find_program(

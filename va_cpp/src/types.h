@@ -1,5 +1,6 @@
 #pragma once
 
+#include <xtensor/xfixed.hpp>
 #include <xtensor/xtensor.hpp>
 
 template <typename T, std::size_t N>

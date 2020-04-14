@@ -1,42 +1,26 @@
 #include "volume_transformer.h"
 
 #include <doctest/doctest.h>
-#include <xflens/cxxblas/level3/gemm.tcc>
 
-TEST_CASE("Transform shape")
+TEST_CASE("Volume transformer2")
 {
-
-  const auto transform = Transform(vec3f{10.0f, 20.0f, 30.0f});
-  mat4f expected{
-      {1, 0, 0, 5},
-      {0, 1, 0, 10},
-      {0, 0, 1, 15},
-      {0, 0, 0, 1},
+  RotationRanges<float> rotation_ranges{
+      .x = {.min = -10, .max = 10},
+      .y = {.min = -10, .max = 20},
+      .z = {.min = -1, .max = 1},
   };
-  CHECK_EQ(transform.transformation, expected);
-}
-
-TEST_CASE("Transform scale")
-{
-
-  const auto transform = Transform(vec3f{1, 1, 1}).scale(vec3f{2, 1, 0.5f});
-  mat4f expectedTransformation{
-      {2.0f, 0.0f, 0.0f, 0.5f},
-      {0.0f, 1.0f, 0.0f, 0.5f},
-      {0.0f, 0.0f, 0.5f, 0.5f},
-      {0.0f, 0.0f, 0.0f, 1.0f},
+  TranslationRanges<float> translation_ranges{
+      .x = {.min = -10, .max = 10},
+      .y = {.min = -10, .max = 20},
+      .z = {.min = -1, .max = 1},
   };
-  CHECK_EQ(transform.transformation, expectedTransformation);
-}
 
-TEST_CASE("Transform ")
-{
-  const auto transform = Transform(vec4f{1.0f, 10.0f, 20.0f, 30.0f})
-                             .rotate({3.14f, 3.14f, 3.14f / 2})
-                             .translate({4, 3, 2})
-                             .scale({2, 1, 0.5});
+  auto transformations = Compose{
+      SetInterpolation{InterpolationType::NearestNeighbour,
+                       InterpolationType::Linear},
+      RandomRotation{rotation_ranges},
+      RandomTranslation{translation_ranges},
+  };
+  transformations.call();
 }
-
-TEST_CASE("Tensor slicing")
-{}
 
