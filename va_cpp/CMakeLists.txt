@@ -132,8 +132,16 @@ if (MSVC)
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
     COMMENT "Creating required subdirectory in lib")
   add_custom_command(TARGET va_cpp POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:va_cpp> ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
-    COMMENT "Copying libraries to lib folder")
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:va_cpp> ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+          COMMENT "Copying libraries to lib folder")
+
+  # NOTE(rivi): we need to copy some MKL DLLs so our package imports without error
+  add_custom_command(TARGET va_cpp POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different $ENV{MKLROOT}/../redist/intel64_win/mkl/mkl_core.dll ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+          COMMENT "Copy mkl_core.dll")
+  add_custom_command(TARGET va_cpp POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different $ENV{MKLROOT}/../redist/intel64_win/mkl/mkl_intel_thread.dll ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+          COMMENT "Copy mkl_intel_thread.dll")
 endif()
 
 set_target_properties(va_cpp va_cpp_tests va_cpp_static
